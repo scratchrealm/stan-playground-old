@@ -44,7 +44,7 @@ def create_summary(dir: str):
             'analysis_id': folder,
             'title': title,
             'status': info.get('status', 'none'),
-            'data_size': os.path.getsize(f'{path}/data.json'),
+            'data_size': os.path.getsize(f'{path}/data.json') if os.path.exists(f'{path}/data.json') else 0,
             'info': info,
             'description': description,
             'stan_program': stan_program,

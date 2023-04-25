@@ -1,107 +1,74 @@
 import { getFileData, readDir, serviceQuery } from "@figurl/interface"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import YAML from 'js-yaml'
-
-type AnalysisData = {
-    modelStanText?: string
-    dataJsonText?: string
-    descriptionMdText?: string
-    optionsYamlText?: string
-    analysisInfo?: AnalysisInfo
-}
 
 export type AnalysisInfo = {
     status: 'none' | 'requested' | 'queued' | 'running' | 'completed' | 'failed'
     error?: string
 }
 
-const useAnalysisData = (analysisId: string) => {
-    const [analysisData, setAnalysisData] = useState<AnalysisData | undefined>(undefined)
+const useAnalysisTextFile = (analysisId: string, name: string) => {
+    const [internalText, setInternalText] = useState<string | undefined>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
     useEffect(() => {
         (async () => {
-            const a = await readDir(`$dir/analyses/${analysisId}`)
-            const hasDataJson = a.files.find(f => f.name === 'data.json') ? true : false
-            const hasModelStan = a.files.find(f => f.name === 'model.stan') ? true : false
-            const hasDescriptionMd = a.files.find(f => f.name === 'description.md') ? true : false
-            const hasOptionsYaml = a.files.find(f => f.name === 'options.yaml') ? true : false
-            const hasAnalysisYaml = a.files.find(f => f.name === 'analysis.yaml') ? true : false
-            const modelStanText = hasModelStan ? await readTextFile(`$dir/analyses/${analysisId}/model.stan`) : ''
-            const dataJsonText = hasDataJson ? await readTextFile(`$dir/analyses/${analysisId}/data.json`) : ''
-            const descriptionMdText = hasDescriptionMd ? await readTextFile(`$dir/analyses/${analysisId}/description.md`) : ''
-            const optionsYamlText = hasOptionsYaml ? await readTextFile(`$dir/analyses/${analysisId}/options.yaml`) : ''
-            const analysisYaml = hasAnalysisYaml ? await readTextFile(`$dir/analyses/${analysisId}/analysis.yaml`) : ''
-            const analysisInfo = loadYaml(analysisYaml) as AnalysisInfo
-            setAnalysisData({
-                modelStanText,
-                dataJsonText,
-                descriptionMdText,
-                optionsYamlText,
-                analysisInfo
-            })
+            const a = await readTextFile(`$dir/analyses/${analysisId}/${name}`)
+            setInternalText(a)
         })()
-    }, [analysisId, refreshCode])
-    const setModelStanText = useCallback((text: string) => {
+    }, [analysisId, name, refreshCode])
+    const refresh = useCallback(() => {
+        setRefreshCode(c => (c + 1))
+    }, [])
+    const setText = useCallback((text: string) => {
         (async () => {
             await serviceQuery('stan-playground', {
                 type: 'set_analysis_text_file',
                 analysis_id: analysisId,
-                name: 'model.stan',
+                name,
                 text
             })
             setRefreshCode(c => (c + 1))
         })()
-    }, [analysisId])
-    const setDataJsonText = useCallback((text: string) => {
-        (async () => {
-            await serviceQuery('stan-playground', {
-                type: 'set_analysis_text_file',
-                analysis_id: analysisId,
-                name: 'data.json',
-                text
-            })
-            setRefreshCode(c => (c + 1))
-        })()
-    }, [analysisId])
-    const setDescriptionMdText = useCallback((text: string) => {
-        (async () => {
-            await serviceQuery('stan-playground', {
-                type: 'set_analysis_text_file',
-                analysis_id: analysisId,
-                name: 'description.md',
-                text
-            })
-            setRefreshCode(c => (c + 1))
-        })()
-    }, [analysisId])
-    const setOptionsYamlText = useCallback((text: string) => {
-        (async () => {
-            await serviceQuery('stan-playground', {
-                type: 'set_analysis_text_file',
-                analysis_id: analysisId,
-                name: 'options.yaml',
-                text
-            })
-            setRefreshCode(c => (c + 1))
-        })()
-    }, [analysisId])
+    }, [analysisId, name])
+    return {text: internalText, refresh, setText}
+}
+
+const useAnalysisData = (analysisId: string) => {
+    const {text: dataJsonText, setText: setDataJsonText} = useAnalysisTextFile(analysisId, 'data.json')
+    const {text: modelStanText, setText: setModelStanText} = useAnalysisTextFile(analysisId, 'model.stan')
+    const {text: descriptionMdText, setText: setDescriptionMdText} = useAnalysisTextFile(analysisId, 'description.md')
+    const {text: optionsYamlText, setText: setOptionsYamlText} = useAnalysisTextFile(analysisId, 'options.yaml')
+    const {text: analysisInfoText, refresh: refreshAnalysisInfo} = useAnalysisTextFile(analysisId, 'analysis.yaml')
+
+    const analysisInfo = useMemo(() => {
+        if (!analysisInfoText) return undefined
+        try {
+            return YAML.load(analysisInfoText) as AnalysisInfo
+        }
+        catch (err) {
+            console.warn('Problem loading yaml')
+            console.warn(err)
+            return undefined
+        }
+    }, [analysisInfoText])
+
     const setStatus = useCallback((status: string) => {
-        if (!['requested', 'none'].includes(status)) throw Error(`Not able to set status: ${status}`)
-        ;(async () => {
+        (async () => {
             await serviceQuery('stan-playground', {
                 type: 'set_analysis_status',
                 analysis_id: analysisId,
                 status
             })
-            setRefreshCode(c => (c + 1))
+            refreshAnalysisInfo()
         })()
-    }, [analysisId])
+    }, [analysisId, refreshAnalysisInfo])
+    
     return {
-        modelStanText: analysisData?.modelStanText,
-        dataJsonText: analysisData?.dataJsonText,
-        descriptionMdText: analysisData?.descriptionMdText,
-        optionsYamlText: analysisData?.optionsYamlText,
-        analysisInfo: analysisData?.analysisInfo,
+        modelStanText,
+        dataJsonText,
+        descriptionMdText,
+        optionsYamlText,
+        analysisInfo,
         setModelStanText,
         setDataJsonText,
         setDescriptionMdText,

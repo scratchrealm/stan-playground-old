@@ -1,5 +1,5 @@
 import { getFileData } from "@figurl/interface"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 export type Summary = {
     analyses: {
@@ -10,6 +10,10 @@ export type Summary = {
         info: {
             status: string
             error?: string
+            timestamp_queued?: number
+            timestamp_started?: number
+            timestamp_completed?: number
+            timestamp_failed?: number
         }
         description: string
         stan_program: string
@@ -19,14 +23,19 @@ export type Summary = {
 
 const useSummary = () => {
     const [summary, setSummary] = useState<Summary>({analyses: []})
+    const [refreshCode, setRefreshCode] = useState(0)
     useEffect(() => {
         (async () => {
             const s = await getFileData(`$dir/summary.json`, () => {}, {responseType: 'json'})
             setSummary(s)
         })()
+    }, [refreshCode])
+
+    const refreshSummary = useCallback(() => {
+        setRefreshCode(c => (c + 1))
     }, [])
 
-    return summary
+    return {summary, refreshSummary}
 }
 
 export default useSummary

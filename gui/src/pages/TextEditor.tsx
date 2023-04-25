@@ -11,12 +11,13 @@ type Props = {
     onSetText: (text: string) => void
     language: string
     readOnly?: boolean
+    wordWrap?: boolean
     label: string
     width: number
     height: number
 }
 
-const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, language, label, width, height}) => {
+const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, wordWrap, language, label, width, height}) => {
     const [internalText, setInternalText] = useState('')
     useEffect(() => {
         if (text !== undefined) {
@@ -68,7 +69,8 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
                     onMount={handleEditorDidMount}
                     options={{
                         readOnly,
-                        domReadOnly: readOnly
+                        domReadOnly: readOnly,
+                        wordWrap: wordWrap ? 'on' : 'off'
                     }}
                 />
             </div>

@@ -26,6 +26,9 @@ def start_processing(*, dir: str):
                     print(f'Processing analysis: {analysis_id}')
                     info['status'] = 'running'
                     info['error'] = None
+                    info['timestamp_started'] = time.time()
+                    info['timestamp_completed'] = None
+                    info['timestamp_failed'] = None
                     with open(info_path, 'w') as f:
                         f.write(yaml.safe_dump(info))
                     create_summary(dir)
@@ -40,17 +43,18 @@ def start_processing(*, dir: str):
                         print(err)
                         info['status'] = 'failed'
                         info['error'] = str(err)
+                        info['timestamp_failed'] = time.time()
                         with open(info_path, 'w') as f:
                             f.write(yaml.safe_dump(info))
                         success = False
-                    finally:
-                        create_summary(dir)
                     if success:
                         print(f'Completed analysis: {analysis_id}')
                         info['status'] = 'completed'
                         info['error'] = None
+                        info['timestamp_completed'] = time.time()
                         with open(info_path, 'w') as f:
                             f.write(yaml.safe_dump(info))
+                    create_summary(dir)
 
         # sleep for 10 seconds before checking again
         time.sleep(10)

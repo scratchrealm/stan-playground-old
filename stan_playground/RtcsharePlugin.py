@@ -47,12 +47,61 @@ class StanPlaygroundService:
                     raise Exception(f'Unable to set status to "none" because current status is "{current_status}"')
                 info['status'] = 'none'
                 info['error'] = None
+                info['timestamp_queued'] = None
+                info['timestamp_started'] = None
+                info['timestamp_completed'] = None
+                info['timestamp_failed'] = None
                 _clear_output_for_analysis(analysis_id, dir=dir)
                 _set_analysis_info(analysis_id, info, dir=dir)
                 create_summary(dir=_get_full_path('$dir', dir=dir))
                 return {'success': True}, b''
+        elif type0 == 'clone_analysis':
+            analysis_id = query['analysis_id']
+            new_analysis_id = _get_new_analysis_id(dir=_get_full_path('$dir', dir=dir))
+            path = _get_full_path(f'$dir/analyses/{analysis_id}', dir=dir)
+            path_new = _get_full_path(f'$dir/analyses/{new_analysis_id}', dir=dir)
+            shutil.copytree(path, path_new)
+            if os.path.exists(f'{path_new}/analysis.yaml'):
+                os.remove(f'{path_new}/analysis.yaml')
+            create_summary(dir=_get_full_path('$dir', dir=dir))
+            return {'newAnalysisId': new_analysis_id}, b''
+        elif type0 == 'delete_analysis':
+            analysis_id = query['analysis_id']
+            path = _get_full_path(f'$dir/analyses/{analysis_id}', dir=dir)
+            shutil.rmtree(path)
+            output_path = _get_full_path(f'$dir/output/{analysis_id}', dir=dir)
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            create_summary(dir=_get_full_path('$dir', dir=dir))
+            return {'success': True}, b''
+        elif type0 == 'create_analysis':
+            new_analysis_id = _get_new_analysis_id(dir=_get_full_path('$dir', dir=dir))
+            path = _get_full_path(f'$dir/analyses/{new_analysis_id}', dir=dir)
+            os.mkdir(path)
+            with open(f'{path}/model.stan', 'w') as f:
+                f.write('// Stan model goes here')
+            with open(f'{path}/data.json', 'w') as f:
+                f.write('{}')
+            with open(f'{path}/description.md', 'w') as f:
+                f.write('# Untitled')
+            with open(f'{path}/options.yaml', 'w') as f:
+                f.write('iter_sampling: 200\niter_warmup: 20\n')
+            create_summary(dir=_get_full_path('$dir', dir=dir))
+            return {'newAnalysisId': new_analysis_id}, b''
         else:
             raise Exception(f'Unexpected query type: {type0}')
+
+def _get_new_analysis_id(*, dir: str) -> str:
+    i = 1
+    while True:
+        # candidate analysis id is 0001, 0002, etc.
+        analysis_id = f'{i:04d}'
+        path = f'{dir}/analyses/{analysis_id}'
+        if not os.path.exists(path):
+            return analysis_id
+        i += 1
+        if i > 9999:
+            raise Exception('Unable to find a new analysis id')
 
 def _get_analysis_info(analysis_id: str, *, dir: str) -> dict:
     # for security, ensure that analysis_id is a valid id

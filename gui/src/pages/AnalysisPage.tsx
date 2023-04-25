@@ -10,9 +10,6 @@ type Props = {
     height: number
 }
 
-const defaultOptionsYamlText = `iter_sampling: 200
-iter_warmup: 20`
-
 const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => {
     // important to do this here just once rather than separately in the various editors
     const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, analysisInfo, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, setStatus} = useAnalysisData(analysisId)
@@ -59,6 +56,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                             text={dataJsonText}
                             onSetText={setDataJsonText}
                             readOnly={analysisInfo?.status !== 'none'}
+                            wordWrap={true}
                         />
                     </Splitter>
                     <Splitter
@@ -74,6 +72,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                             label="description.md"
                             text={descriptionMdText}
                             onSetText={setDescriptionMdText}
+                            wordWrap={true}
                         />
                         <TextEditor
                             width={0}
@@ -81,7 +80,6 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                             language="yaml"
                             label="options.yaml"
                             text={optionsYamlText}
-                            defaultText={defaultOptionsYamlText}
                             onSetText={setOptionsYamlText}
                             readOnly={analysisInfo?.status !== 'none'}
                         />

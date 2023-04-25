@@ -1,4 +1,4 @@
-import { getFileData } from "@figurl/interface"
+import { getFileData, serviceQuery } from "@figurl/interface"
 import { FunctionComponent, useCallback, useEffect, useState } from "react"
 import Hyperlink from "../components/Hyperlink"
 import useRoute from "../useRoute"
@@ -22,6 +22,38 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
         onSetStatus('none')
     }, [onSetStatus])
     const mcmcMonitorBaseUrl = useMcmcMonitorBaseUrl()
+    const handleClone = useCallback(() => {
+        // prompt the user if they are sure they want to clone this analysis
+        if (!window.confirm('Are you sure you want to CLONE this analysis?')) return
+        (async() => {
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'clone_analysis',
+                analysis_id: analysisId
+            })
+            setRoute({page: 'analysis', analysisId: result.newAnalysisId})
+            setTimeout(() => {
+                // provide a popup box that says that the analysis has been clone and you are not viewing the clone
+                window.alert(`Analysis has been cloned. You are now viewing the clone.`)
+            }, 500)
+        })()
+    }, [analysisId, setRoute])
+    const handleDelete = useCallback(() => {
+        // prompt the user if they are sure they want to delete this analysis
+        if (!window.confirm('Are you sure you want to DELETE this analysis?')) return
+        (async() => {
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'delete_analysis',
+                analysis_id: analysisId
+            })
+            if (result.success) {
+                setRoute({page: 'home'})
+                setTimeout(() => {
+                    // provide a popup box that says that the analysis has been deleted
+                    window.alert(`Analysis has been deleted.`)
+                }, 500)
+            }
+        })()
+    }, [analysisId, setRoute])
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 12}}>
             <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
@@ -98,6 +130,11 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                     }
                 </span>
             )}</div>
+            <hr />
+            {/* A clickable link to clone this analysis: */}
+            <div><Hyperlink onClick={handleClone}>Clone this analysis</Hyperlink></div>
+            {/* A clickable link to delete this analysis: */}
+            <div><Hyperlink color="darkred" onClick={handleDelete}>Delete this analysis</Hyperlink></div>
         </div>
     )
 }

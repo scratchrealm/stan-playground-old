@@ -1,6 +1,7 @@
 import os
 import yaml
 import shutil
+import time
 from .create_summary import create_summary
 from .RtcsharePlugin import check_valid_analysis_id
 
@@ -23,6 +24,10 @@ def queue_analysis(analysis_id: str, *, dir: str):
             return
         info['status'] = 'queued'
         info['error'] = None
+        info['timestamp_queued'] = time.time()
+        info['timestamp_started'] = None
+        info['timestamp_completed'] = None
+        info['timestamp_failed'] = None
         with open(info_path, 'w') as f:
             f.write(yaml.safe_dump(info))
             print(f'Queued analysis: {analysis_id}')

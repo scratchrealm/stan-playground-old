@@ -19,5 +19,10 @@ def queue(analysis_ids: List[str]):
 def start():
     stan_playground.start_processing(dir='.')
 
+@click.command(help='Update the summary file for the GUI')
+def update_summary():
+    stan_playground.create_summary(dir='.')
+
 cli.add_command(queue)
 cli.add_command(start)
+cli.add_command(update_summary)
