@@ -86,6 +86,8 @@ class StanPlaygroundService:
                 f.write('# Untitled')
             with open(f'{path}/options.yaml', 'w') as f:
                 f.write('iter_sampling: 200\niter_warmup: 20\n')
+            with open(f'{path}/analysis.yaml', 'w') as f:
+                f.write('status: none\n')
             create_summary(dir=_get_full_path('$dir', dir=dir))
             return {'newAnalysisId': new_analysis_id}, b''
         else:
