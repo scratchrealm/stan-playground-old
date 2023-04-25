@@ -12,7 +12,7 @@ type Props = {
 
 const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => {
     // important to do this here just once rather than separately in the various editors
-    const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, analysisInfo, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, setStatus} = useAnalysisData(analysisId)
+    const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, analysisInfo, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, setStatus, refreshAnalysisInfo} = useAnalysisData(analysisId)
 
     const controlPanelWidth = 200
     return (
@@ -23,6 +23,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     height={height}
                     analysisId={analysisId}
                     analysisInfo={analysisInfo}
+                    onRefreshAnalysisInfo={refreshAnalysisInfo}
                     onSetStatus={setStatus}
                 />
             </div>

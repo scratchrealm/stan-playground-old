@@ -14,6 +14,8 @@ def start_processing(*, dir: str):
     while True:
         # iterate through all folders in the analyses directory
         analyses_dir = f'{dir}/analyses'
+        if not os.path.exists(analyses_dir):
+            os.makedirs(analyses_dir)
         for analysis_id in os.listdir(analyses_dir):
             analysis_dir = f'{analyses_dir}/{analysis_id}'
             analysis_output_dir = f'{dir}/output/{analysis_id}'

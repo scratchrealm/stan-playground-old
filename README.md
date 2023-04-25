@@ -4,14 +4,14 @@ Stan Playground is a browser-based system for creating, running, and visualizing
 
 ## Overview
 
-A Stan Playground instance consists of a collection of analyses. Each analysis consists of the following:
+A Stan Playground instance consists of a collection of analyses. Each analysis comprises:
 
 * An analysis ID (`0001`, `0002`, etc.)
-* A Stan model (`model.stan`)
+* A Stan program (`model.stan`)
 * A data file (`data.json`)
 * A description (`description.md`) - the first heading is the analysis title
 * An options file (`options.yaml`) - determines number of iterations, etc.
-* The output from the analysis which can be monitored using the MCMC-Monitor tool
+* The output of the analysis, if it exists, which can be visualized using the MCMC-Monitor tool
 
 These data are all stored in a directory on your computer (or the computer of the person hosting the instance), with the following structure:
 
@@ -28,20 +28,20 @@ stan-playground-data
 │   └── ...
 ├── output # monitored by MCMC-Monitor
 │   ├── 0001
-│   │   ├── The output from cmdstan
+│   │   ├── Output files from cmdstan
 │   │   └── ...
 │   ├── 0002
 │   └── ...
 ```
 
-The directory is monitored by a background service that automatically runs analyses as they are created or modified through the web interface. The output from the runs is stored in a separate directory and can be viewed using MCMC Monitor.
+This directory is monitored by a background service that automatically runs analyses as they are created or modified through the web interface. The outputs from the runs are stored in the output directory and can be viewed using MCMC Monitor.
 
 An instance of the system comprises the following components:
 
 * The data directory, served by an [rtcshare daemon](https://github.com/scratchrealm/rtcshare).
 * An installed Python package that provides a command-line interface for managing the analyses and running the background service.
 * A web application that provides a graphical user interface for creating, editing, and running analyses.
-* An MCMC Monitor service that monitors the output directory and provides a graphical user interface for viewing the output of the analyses.
+* The MCMC Monitor service that monitors the output directory and provides a graphical user interface for viewing the output of the analyses.
 
 ## Usage
 
@@ -72,17 +72,21 @@ You can cancel a run for an analysis that has a status of `requested` or `queued
 
 **Deleting a run**
 
-You can delete a run for an analysis that has a status of `completed` or `failed` using the appropriate button on the web interface. Note however that you cannot delete an actively running analysis (status is `running`). Note that deleting a run is not the same as deleting an analysis.
+You can delete a run for an analysis that has a status of `completed` or `failed` using the appropriate button on the web interface. Note however that you cannot delete an actively running analysis (status is `running`).
+
+Note that deleting a run is not the same as deleting an analysis.
 
 **Deleting an analysis**
 
-You can delete an analysis using the appropriate button on the web interface. This will delete all files associated with the analysis, and remove the folder as well as the corresponding output folder if it exists. Note that deleting an analysis is not the same as deleting a run.
+You can delete an analysis using the appropriate button on the web interface. Internally, this will flag the analysis as deleted without deleting the actual files. This is to provide a way to undo the deletion. Analysis IDs for deleted analyses will not be reused.
+
+Note that deleting an analysis is not the same as deleting a run.
 
 **Viewing the output of a run**
 
 The output of a run can be viewed using the MCMC Monitor tool. To do this, click on the "MCMC Monitor" link in the main analyses table. You can monitor an ongoing run and you can also visualize the output of a completed or failed run.
 
-**Clone an analysis**
+**Cloning an analysis**
 
 You can clone an analysis using the appropriate button on the web interface when editing the analysis. This will create a new analysis with the same model, data, description, and options as the original analysis. The new analysis will have a new ID.
 

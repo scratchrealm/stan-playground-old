@@ -12,6 +12,7 @@ const useAnalysisTextFile = (analysisId: string, name: string) => {
     const [refreshCode, setRefreshCode] = useState(0)
     useEffect(() => {
         (async () => {
+            setInternalText(undefined)
             const a = await readTextFile(`$dir/analyses/${analysisId}/${name}`)
             setInternalText(a)
         })()
@@ -73,24 +74,14 @@ const useAnalysisData = (analysisId: string) => {
         setDataJsonText,
         setDescriptionMdText,
         setOptionsYamlText,
-        setStatus
+        setStatus,
+        refreshAnalysisInfo
     }
 }
 
 const readTextFile = async (path: string) => {
     const a = await getFileData(path, () => {}, {responseType: 'text'})
     return a as string
-}
-
-const loadYaml = (text: string) => {
-    try {
-        return YAML.load(text) || {}
-    }
-    catch (err) {
-        console.warn('Problem loading yaml')
-        console.warn(err)
-        return {}
-    }
 }
 
 export default useAnalysisData

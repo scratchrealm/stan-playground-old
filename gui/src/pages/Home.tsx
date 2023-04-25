@@ -32,9 +32,13 @@ const Home: FunctionComponent<Props> = () => {
             <div>
                 <Hyperlink onClick={handleCreateNewAnalysis}>Create new analysis</Hyperlink>
                 &nbsp;|&nbsp;
+                <Hyperlink onClick={refreshSummary}>Refresh table</Hyperlink>
+                &nbsp;|&nbsp;
                 <a href="https://github.com/scratchrealm/stan-playground/blob/main/README.md" target="_blank" rel="noopener noreferrer">View documentation</a>
             </div>
-            <AnalysesTable summary={summary} />
+            {
+                summary ? <AnalysesTable summary={summary} /> : <div>Loading...</div>
+            }
         </div>
     )
 }

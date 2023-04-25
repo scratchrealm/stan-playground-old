@@ -22,10 +22,11 @@ export type Summary = {
 }
 
 const useSummary = () => {
-    const [summary, setSummary] = useState<Summary>({analyses: []})
+    const [summary, setSummary] = useState<Summary | undefined>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
     useEffect(() => {
-        (async () => {
+        setSummary(undefined)
+        ;(async () => {
             const s = await getFileData(`$dir/summary.json`, () => {}, {responseType: 'json'})
             setSummary(s)
         })()

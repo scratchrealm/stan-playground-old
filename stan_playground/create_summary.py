@@ -4,6 +4,9 @@ import yaml
 
 
 def create_summary(dir: str):
+    if not os.path.exists(f'{dir}/analyses'):
+        os.makedirs(f'{dir}/analyses')
+
     analyses = []
     # Iterate through all the folders in the analyses directory
     folders = os.listdir(f'{dir}/analyses')

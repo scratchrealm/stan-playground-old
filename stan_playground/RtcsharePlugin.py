@@ -75,7 +75,7 @@ class StanPlaygroundService:
         elif type0 == 'create_analysis':
             new_analysis_id = _get_new_analysis_id(dir=_get_full_path('$dir', dir=dir))
             path = _get_full_path(f'$dir/analyses/{new_analysis_id}', dir=dir)
-            os.mkdir(path)
+            os.makedirs(path)
             with open(f'{path}/model.stan', 'w') as f:
                 f.write('// Stan model goes here')
             with open(f'{path}/data.json', 'w') as f:

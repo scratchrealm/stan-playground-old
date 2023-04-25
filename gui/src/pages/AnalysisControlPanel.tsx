@@ -7,12 +7,13 @@ import { AnalysisInfo } from "./useAnalysisData"
 type Props = {
     analysisId: string
     analysisInfo: AnalysisInfo | undefined
+    onRefreshAnalysisInfo: () => void
     onSetStatus: (status: string) => void
     width: number
     height: number
 }
 
-const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInfo, onSetStatus, width, height}) => {
+const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInfo, onRefreshAnalysisInfo, onSetStatus, width, height}) => {
     const {setRoute} = useRoute()
     const status = analysisInfo !== undefined ? analysisInfo?.status || 'none' : 'undefined'
     const handleRequestRun = useCallback(() => {
@@ -55,10 +56,10 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
         })()
     }, [analysisId, setRoute])
     return (
-        <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 12}}>
+        <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 13}}>
             <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
             <div>Analysis: {analysisId}</div>
-            <div>Status: {status}</div>
+            <div>Status: <span style={{color: colorForStatus(status)}}>{status}</span> (<Hyperlink onClick={onRefreshAnalysisInfo}>refresh</Hyperlink>)</div>
             <div>{status === 'none' && (
                 <span>
                     <p>
@@ -137,6 +138,18 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
             <div><Hyperlink color="darkred" onClick={handleDelete}>Delete this analysis</Hyperlink></div>
         </div>
     )
+}
+
+const colorForStatus = (status: string) => {
+    switch (status) {
+        case 'none': return 'gray'
+        case 'requested': return 'black'
+        case 'queued': return 'orange'
+        case 'running': return 'blue'
+        case 'completed': return 'green'
+        case 'failed': return 'red'
+        default: return 'black'
+    }
 }
 
 export const useMcmcMonitorBaseUrl = () => {
