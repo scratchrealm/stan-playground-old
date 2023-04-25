@@ -1,16 +1,17 @@
 import { FunctionComponent } from "react";
 import AnalysesTable from "./AnalysesTable";
+import useSummary from "./useSummary";
 
 type Props = {
     // none yet
 }
 
 const Home: FunctionComponent<Props> = () => {
+    const summary = useSummary()
     return (
         <div style={{padding: 30}}>
             <h1>Stan playground</h1>
-            <h3>Analyses</h3>
-            <AnalysesTable />
+            <AnalysesTable summary={summary} />
         </div>
     )
 }

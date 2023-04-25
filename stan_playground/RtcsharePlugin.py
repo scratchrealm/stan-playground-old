@@ -2,6 +2,7 @@ from typing import Tuple
 import os
 import yaml
 import shutil
+from .create_summary import create_summary
 
 
 class RtcsharePlugin:
@@ -23,6 +24,7 @@ class StanPlaygroundService:
                 full_path = _get_full_path(path, dir=dir)
                 with open(full_path, 'w') as f:
                     f.write(text)
+                create_summary(dir=_get_full_path('$dir', dir=dir))
                 return {'success': True}, b''
             else:
                 raise Exception(f'Unexpected file name: {name}')
@@ -30,43 +32,47 @@ class StanPlaygroundService:
             analysis_id = query['analysis_id']
             check_valid_analysis_id(analysis_id)
             status = query['status']
-            config = _get_analysis_config(analysis_id, dir=dir)
-            current_status = config.get('status', 'none')
+            info = _get_analysis_info(analysis_id, dir=dir)
+            current_status = info.get('status', 'none')
             if status == 'requested':
                 if current_status != 'none':
                     raise Exception(f'Unable to set status to "requested" because current status is "{current_status}"')
-                config['status'] = 'requested'
-                _set_analysis_config(analysis_id, config, dir=dir)
+                info['status'] = 'requested'
+                info['error'] = None
+                _set_analysis_info(analysis_id, info, dir=dir)
+                create_summary(dir=_get_full_path('$dir', dir=dir))
                 return {'success': True}, b''
             elif status == 'none':
-                if not current_status in ['finished', 'error', 'queued']:
+                if not current_status in ['completed', 'failed', 'queued', 'requested']:
                     raise Exception(f'Unable to set status to "none" because current status is "{current_status}"')
-                config['status'] = 'none'
+                info['status'] = 'none'
+                info['error'] = None
                 _clear_output_for_analysis(analysis_id, dir=dir)
-                _set_analysis_config(analysis_id, config, dir=dir)
+                _set_analysis_info(analysis_id, info, dir=dir)
+                create_summary(dir=_get_full_path('$dir', dir=dir))
                 return {'success': True}, b''
         else:
             raise Exception(f'Unexpected query type: {type0}')
 
-def _get_analysis_config(analysis_id: str, *, dir: str) -> dict:
+def _get_analysis_info(analysis_id: str, *, dir: str) -> dict:
     # for security, ensure that analysis_id is a valid id
     check_valid_analysis_id(analysis_id)
     path = f'$dir/analyses/{analysis_id}/analysis.yaml'
     full_path = _get_full_path(path, dir=dir)
     if not os.path.exists(full_path):
         return {}
-    # load the yaml config
+    # load the yaml info
     with open(full_path, 'r') as f:
         text = f.read()
-    config = yaml.safe_load(text)
-    return config
+    info = yaml.safe_load(text)
+    return info
 
-def _set_analysis_config(analysis_id: str, config: dict, *, dir: str) -> None:
+def _set_analysis_info(analysis_id: str, info: dict, *, dir: str) -> None:
     # for security, ensure that analysis_id is a valid id
     check_valid_analysis_id(analysis_id)
     path = f'$dir/analyses/{analysis_id}/analysis.yaml'
     full_path = _get_full_path(path, dir=dir)
-    text = yaml.safe_dump(config)
+    text = yaml.safe_dump(info)
     with open(full_path, 'w') as f:
         f.write(text)
 

@@ -10,12 +10,13 @@ type Props = {
     defaultText?: string
     onSetText: (text: string) => void
     language: string
+    readOnly?: boolean
     label: string
     width: number
     height: number
 }
 
-const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, language, label, width, height}) => {
+const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, language, label, width, height}) => {
     const [internalText, setInternalText] = useState('')
     useEffect(() => {
         if (text !== undefined) {
@@ -54,7 +55,9 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, lan
             <div style={{position: 'absolute', paddingLeft: 20, paddingTop: 5, width, height: toolbarHeight, backgroundColor: 'lightgray'}}>
                 {label}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <button disabled={text === internalText} onClick={handleSave}>save</button>
+                {!readOnly && <button disabled={text === internalText} onClick={handleSave}>save</button>}
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                {readOnly && <span style={{color: 'gray'}}>read only</span>}
             </div>
             <div style={{position: 'absolute', top: toolbarHeight, width, height: height - toolbarHeight}}>
                 <Editor
@@ -63,6 +66,10 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, lan
                     defaultLanguage={language}
                     onChange={handleChange}
                     onMount={handleEditorDidMount}
+                    options={{
+                        readOnly,
+                        domReadOnly: readOnly
+                    }}
                 />
             </div>
         </div>

@@ -2,26 +2,26 @@ import { getFileData } from "@figurl/interface"
 import { FunctionComponent, useCallback, useEffect, useState } from "react"
 import Hyperlink from "../components/Hyperlink"
 import useRoute from "../useRoute"
-import { AnalysisConfig } from "./useAnalysisData"
+import { AnalysisInfo } from "./useAnalysisData"
 
 type Props = {
     analysisId: string
-    analysisConfig: AnalysisConfig | undefined
+    analysisInfo: AnalysisInfo | undefined
     onSetStatus: (status: string) => void
     width: number
     height: number
 }
 
-const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisConfig, onSetStatus, width, height}) => {
+const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInfo, onSetStatus, width, height}) => {
     const {setRoute} = useRoute()
-    const status = analysisConfig?.status || 'undefined'
+    const status = analysisInfo !== undefined ? analysisInfo?.status || 'none' : 'undefined'
     const handleRequestRun = useCallback(() => {
         onSetStatus('requested')
     }, [onSetStatus])
     const handleDeleteRun = useCallback(() => {
         onSetStatus('none')
     }, [onSetStatus])
-    const mcmcMonitorUrl = useMcmcMonitorUrl(analysisId)
+    const mcmcMonitorBaseUrl = useMcmcMonitorBaseUrl()
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 12}}>
             <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
@@ -57,40 +57,41 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisCon
                         This analysis is running.
                     </p>
                     {
-                        mcmcMonitorUrl ? (
-                            <p>You can <a href={mcmcMonitorUrl} target="_blank" rel="noreferrer">monitor the progress using MCMC Monitor</a></p>
+                        mcmcMonitorBaseUrl ? (
+                            <p>You can <a href={createMcmcMonitorUrl(mcmcMonitorBaseUrl, analysisId)} target="_blank" rel="noreferrer">monitor the progress using MCMC Monitor</a></p>
                         ) : (
                             <p>MCMC Monitor URL is not found in output/mcmc-monitor-url.txt</p>
                         )
                     }
                 </span>
             )}</div>
-            <div>{status === 'finished' && (
+            <div>{status === 'completed' && (
                 <span>
                     <p>
                         This analysis has completed.
                     </p>
                     {
-                        mcmcMonitorUrl ? (
-                            <p>You can <a href={mcmcMonitorUrl} target="_blank" rel="noreferrer">view the output using MCMC Monitor</a></p>
+                        mcmcMonitorBaseUrl ? (
+                            <p>You can <a href={createMcmcMonitorUrl(mcmcMonitorBaseUrl, analysisId)} target="_blank" rel="noreferrer">view the output using MCMC Monitor</a></p>
                         ) : (
                             <p>MCMC Monitor URL is not found in output/mcmc-monitor-url.txt</p>
                         )
                     }
+                    <button onClick={handleDeleteRun}>Delete run</button>
                 </span>
             )}</div>
-            <div>{status === 'error' && (
+            <div>{status === 'failed' && (
                 <span>
                     <p>
                         An error has occurred while running this analysis. You can delete this run using the button below.
                     </p>
                     <button onClick={handleDeleteRun}>Delete run</button>
                     <p style={{color: 'red', wordWrap: 'break-word'}}>
-                        {analysisConfig?.error}
+                        {analysisInfo?.error}
                     </p>
                     {
-                        mcmcMonitorUrl ? (
-                            <p>You can <a href={mcmcMonitorUrl} target="_blank" rel="noreferrer">view the output if there is any using MCMC Monitor</a></p>
+                        mcmcMonitorBaseUrl ? (
+                            <p>You can <a href={createMcmcMonitorUrl(mcmcMonitorBaseUrl, analysisId)} target="_blank" rel="noreferrer">view the output if there is any using MCMC Monitor</a></p>
                         ) : (
                             <p>MCMC Monitor URL is not found in output/mcmc-monitor-url.txt</p>
                         )
@@ -101,7 +102,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisCon
     )
 }
 
-const useMcmcMonitorUrl = (analysisId: string) => {
+export const useMcmcMonitorBaseUrl = () => {
     const [mcmcMonitorUrl, setMcmcMonitorUrl] = useState<string | undefined>(undefined)
     useEffect(() => {
         (async () => {
@@ -110,10 +111,16 @@ const useMcmcMonitorUrl = (analysisId: string) => {
                 setMcmcMonitorUrl(undefined)
                 return
             }
-            setMcmcMonitorUrl(`${a}#/run/${analysisId}`)
+            setMcmcMonitorUrl(a)
         })()
-    }, [analysisId])
+    }, [])
     return mcmcMonitorUrl
+}
+
+
+export const createMcmcMonitorUrl = (mcmcMonitorBaseUrl: string, analysisId: string) => {
+    if (!mcmcMonitorBaseUrl) return undefined
+    return `${mcmcMonitorBaseUrl}#/run/${analysisId}`
 }
 
 export default AnalysisControlPanel

@@ -15,7 +15,7 @@ iter_warmup: 20`
 
 const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => {
     // important to do this here just once rather than separately in the various editors
-    const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, analysisConfig, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, setStatus} = useAnalysisData(analysisId)
+    const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, analysisInfo, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, setStatus} = useAnalysisData(analysisId)
 
     const controlPanelWidth = 200
     return (
@@ -25,7 +25,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     width={controlPanelWidth}
                     height={height}
                     analysisId={analysisId}
-                    analysisConfig={analysisConfig}
+                    analysisInfo={analysisInfo}
                     onSetStatus={setStatus}
                 />
             </div>
@@ -49,6 +49,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                             label="model.stan"
                             text={modelStanText}
                             onSetText={setModelStanText}
+                            readOnly={analysisInfo?.status !== 'none'}
                         />
                         <TextEditor
                             width={0}
@@ -57,6 +58,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                             label="data.json"
                             text={dataJsonText}
                             onSetText={setDataJsonText}
+                            readOnly={analysisInfo?.status !== 'none'}
                         />
                     </Splitter>
                     <Splitter
@@ -81,6 +83,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                             text={optionsYamlText}
                             defaultText={defaultOptionsYamlText}
                             onSetText={setOptionsYamlText}
+                            readOnly={analysisInfo?.status !== 'none'}
                         />
                     </Splitter>
                 </Splitter>

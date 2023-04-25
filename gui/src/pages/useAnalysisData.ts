@@ -7,16 +7,16 @@ type AnalysisData = {
     dataJsonText?: string
     descriptionMdText?: string
     optionsYamlText?: string
-    analysisConfig?: AnalysisConfig
+    analysisInfo?: AnalysisInfo
 }
 
-export type AnalysisConfig = {
-    status: 'none' | 'requested' | 'queued' | 'running' | 'finished' | 'error'
+export type AnalysisInfo = {
+    status: 'none' | 'requested' | 'queued' | 'running' | 'completed' | 'failed'
     error?: string
 }
 
 const useAnalysisData = (analysisId: string) => {
-    const [analysisData, setAnalysisData] = useState<AnalysisData>({})
+    const [analysisData, setAnalysisData] = useState<AnalysisData | undefined>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
     useEffect(() => {
         (async () => {
@@ -31,13 +31,13 @@ const useAnalysisData = (analysisId: string) => {
             const descriptionMdText = hasDescriptionMd ? await readTextFile(`$dir/analyses/${analysisId}/description.md`) : ''
             const optionsYamlText = hasOptionsYaml ? await readTextFile(`$dir/analyses/${analysisId}/options.yaml`) : ''
             const analysisYaml = hasAnalysisYaml ? await readTextFile(`$dir/analyses/${analysisId}/analysis.yaml`) : ''
-            const analysisConfig = loadYaml(analysisYaml) as AnalysisConfig
+            const analysisInfo = loadYaml(analysisYaml) as AnalysisInfo
             setAnalysisData({
                 modelStanText,
                 dataJsonText,
                 descriptionMdText,
                 optionsYamlText,
-                analysisConfig
+                analysisInfo
             })
         })()
     }, [analysisId, refreshCode])
@@ -97,11 +97,11 @@ const useAnalysisData = (analysisId: string) => {
         })()
     }, [analysisId])
     return {
-        modelStanText: analysisData.modelStanText,
-        dataJsonText: analysisData.dataJsonText,
-        descriptionMdText: analysisData.descriptionMdText,
-        optionsYamlText: analysisData.optionsYamlText,
-        analysisConfig: analysisData.analysisConfig,
+        modelStanText: analysisData?.modelStanText,
+        dataJsonText: analysisData?.dataJsonText,
+        descriptionMdText: analysisData?.descriptionMdText,
+        optionsYamlText: analysisData?.optionsYamlText,
+        analysisInfo: analysisData?.analysisInfo,
         setModelStanText,
         setDataJsonText,
         setDescriptionMdText,
@@ -117,7 +117,7 @@ const readTextFile = async (path: string) => {
 
 const loadYaml = (text: string) => {
     try {
-        return YAML.load(text)
+        return YAML.load(text) || {}
     }
     catch (err) {
         console.warn('Problem loading yaml')

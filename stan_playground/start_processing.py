@@ -2,11 +2,14 @@ import os
 import yaml
 import time
 import json
+from .create_summary import create_summary
 
 
 def start_processing(*, dir: str):
     # check that we have cmdstanpy installed
     from cmdstanpy import CmdStanModel
+
+    create_summary(dir)
 
     while True:
         # iterate through all folders in the analyses directory
@@ -14,16 +17,19 @@ def start_processing(*, dir: str):
         for analysis_id in os.listdir(analyses_dir):
             analysis_dir = f'{analyses_dir}/{analysis_id}'
             analysis_output_dir = f'{dir}/output/{analysis_id}'
-            config_path = f'{analysis_dir}/analysis.yaml'
-            if os.path.exists(config_path):
-                with open(config_path, 'r') as f:
-                    config = yaml.safe_load(f.read())
-                status = config.get('status', 'none')
+            info_path = f'{analysis_dir}/analysis.yaml'
+            if os.path.exists(info_path):
+                with open(info_path, 'r') as f:
+                    info = yaml.safe_load(f.read())
+                status = info.get('status', 'none')
                 if status == 'queued':
                     print(f'Processing analysis: {analysis_id}')
-                    config['status'] = 'running'
-                    with open(config_path, 'w') as f:
-                        f.write(yaml.safe_dump(config))
+                    info['status'] = 'running'
+                    info['error'] = None
+                    with open(info_path, 'w') as f:
+                        f.write(yaml.safe_dump(info))
+                    create_summary(dir)
+
                     if not os.path.exists(analysis_output_dir):
                         os.makedirs(analysis_output_dir)
                     try:
@@ -32,16 +38,19 @@ def start_processing(*, dir: str):
                     except Exception as err:
                         print(f'Error running analysis: {analysis_id}')
                         print(err)
-                        config['status'] = 'error'
-                        config['error'] = str(err)
-                        with open(config_path, 'w') as f:
-                            f.write(yaml.safe_dump(config))
+                        info['status'] = 'failed'
+                        info['error'] = str(err)
+                        with open(info_path, 'w') as f:
+                            f.write(yaml.safe_dump(info))
                         success = False
+                    finally:
+                        create_summary(dir)
                     if success:
-                        print(f'Finished analysis: {analysis_id}')
-                        config['status'] = 'finished'
-                        with open(config_path, 'w') as f:
-                            f.write(yaml.safe_dump(config))
+                        print(f'Completed analysis: {analysis_id}')
+                        info['status'] = 'completed'
+                        info['error'] = None
+                        with open(info_path, 'w') as f:
+                            f.write(yaml.safe_dump(info))
 
         # sleep for 10 seconds before checking again
         time.sleep(10)
