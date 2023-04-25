@@ -11,19 +11,23 @@ def create_summary(dir: str):
     for folder in folders:
         path = f'{dir}/analyses/{folder}'
 
-        # read description from description.md file
-        if os.path.exists(f'{path}/description.md'):
-            with open(f'{path}/description.md') as f:
-                description = f.read()
-        else:
-            description = ''
-
         # read info from analysis.yaml file
         if os.path.exists(f'{path}/analysis.yaml'):
             with open(f'{path}/analysis.yaml') as f:
                 info = yaml.load(f, Loader=yaml.FullLoader)
         else:
             info = {}
+        
+        # if deleted, skip
+        if info.get('deleted', False):
+            continue
+
+        # read description from description.md file
+        if os.path.exists(f'{path}/description.md'):
+            with open(f'{path}/description.md') as f:
+                description = f.read()
+        else:
+            description = ''
         
         # read options from options.yaml file
         if os.path.exists(f'{path}/options.yaml'):

@@ -67,11 +67,9 @@ class StanPlaygroundService:
             return {'newAnalysisId': new_analysis_id}, b''
         elif type0 == 'delete_analysis':
             analysis_id = query['analysis_id']
-            path = _get_full_path(f'$dir/analyses/{analysis_id}', dir=dir)
-            shutil.rmtree(path)
-            output_path = _get_full_path(f'$dir/output/{analysis_id}', dir=dir)
-            if os.path.exists(output_path):
-                shutil.rmtree(output_path)
+            info = _get_analysis_info(analysis_id, dir=dir)
+            info['deleted'] = True
+            _set_analysis_info(analysis_id, info, dir=dir)
             create_summary(dir=_get_full_path('$dir', dir=dir))
             return {'success': True}, b''
         elif type0 == 'create_analysis':

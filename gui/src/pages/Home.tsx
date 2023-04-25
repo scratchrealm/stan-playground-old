@@ -12,6 +12,8 @@ const Home: FunctionComponent<Props> = () => {
     const {summary, refreshSummary} = useSummary()
 
     const handleCreateNewAnalysis = useCallback(() => {
+        // Confirm that user wants to create a new analysis
+        if (!window.confirm('Create a new analysis?')) return
         (async () => {
             const {result} = await serviceQuery('stan-playground', {
                 type: 'create_analysis'
@@ -19,7 +21,7 @@ const Home: FunctionComponent<Props> = () => {
             if (!result.newAnalysisId) throw new Error('Unexpected - no new analysis id')
             refreshSummary()
             setTimeout(() => {
-                window.alert(`Analysis has been created.`)
+                window.alert(`New analysis has been created.`)
             }, 500)
         })()
     }, [refreshSummary])
