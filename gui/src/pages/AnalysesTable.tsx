@@ -47,7 +47,7 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                                 </Hyperlink>
                             </td>
                             <td>
-                                {analyses.user_id || ''}
+                                {analysis.user_id || ''}
                             </td>
                             <td>{analysis.status}</td>
                             <td>

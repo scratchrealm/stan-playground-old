@@ -90,7 +90,7 @@ class StanPlaygroundService:
                 'status': 'none',
                 'user_id': user_id
             }
-            with open(f'{path}/analysis.yaml', 'w') as f:
+            with open(f'{path_new}/analysis.yaml', 'w') as f:
                 yaml.dump(x, f)
             create_summary(dir=_get_full_path('$dir', dir=dir))
             return {'newAnalysisId': new_analysis_id}, b''
