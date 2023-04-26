@@ -46,15 +46,24 @@ def create_summary(dir: str):
         else:
             stan_program = ''
         
+        # read python program from data.py file
+        if os.path.exists(f'{path}/data.py'):
+            with open(f'{path}/data.py') as f:
+                data_python_program = f.read()
+        else:
+            data_python_program = ''
+        
         title = _get_title_from_markdown(description)
         analyses.append({
             'analysis_id': folder,
             'title': title,
             'status': info.get('status', 'none'),
+            'user_id': info.get('user_id', None),
             'data_size': os.path.getsize(f'{path}/data.json') if os.path.exists(f'{path}/data.json') else 0,
             'info': info,
             'description': description,
             'stan_program': stan_program,
+            'data_python_program': data_python_program,
             'options': options
         })
 

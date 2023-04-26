@@ -25,6 +25,7 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                     <tr>
                         <th>Analysis</th>
                         <th>Title</th>
+                        <th>User</th>
                         <th>Status</th>
                         <th>MCMC Monitor</th>
                         <th>Timestamp</th>
@@ -44,6 +45,9 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                                 <Hyperlink onClick={() => setRoute({page: 'analysis', analysisId: analysis.analysis_id})}>
                                     {analysis.title}
                                 </Hyperlink>
+                            </td>
+                            <td>
+                                {analyses.user_id || ''}
                             </td>
                             <td>{analysis.status}</td>
                             <td>

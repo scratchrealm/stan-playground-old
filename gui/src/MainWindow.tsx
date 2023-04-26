@@ -1,6 +1,6 @@
 import { startListeningToParent, useWindowDimensions } from "@figurl/interface";
 import { FunctionComponent } from "react";
-import AnalysisPage from "./pages/AnalysisPage";
+import AnalysisPage from "./pages/AnalysisPage/AnalysisPage";
 import Home from "./pages/Home";
 import useRoute from "./useRoute";
 

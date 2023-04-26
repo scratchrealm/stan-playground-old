@@ -1,13 +1,13 @@
-import { getFileData, readDir, serviceQuery } from "@figurl/interface"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { getFileData, serviceQuery } from "@figurl/interface"
 import YAML from 'js-yaml'
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type AnalysisInfo = {
     status: 'none' | 'requested' | 'queued' | 'running' | 'completed' | 'failed'
     error?: string
 }
 
-const useAnalysisTextFile = (analysisId: string, name: string) => {
+export const useAnalysisTextFile = (analysisId: string, name: string) => {
     const [internalText, setInternalText] = useState<string | undefined>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
     useEffect(() => {
@@ -27,6 +27,8 @@ const useAnalysisTextFile = (analysisId: string, name: string) => {
                 analysis_id: analysisId,
                 name,
                 text
+            }, {
+                includeUserId: true
             })
             setRefreshCode(c => (c + 1))
         })()
@@ -35,10 +37,11 @@ const useAnalysisTextFile = (analysisId: string, name: string) => {
 }
 
 const useAnalysisData = (analysisId: string) => {
-    const {text: dataJsonText, setText: setDataJsonText} = useAnalysisTextFile(analysisId, 'data.json')
-    const {text: modelStanText, setText: setModelStanText} = useAnalysisTextFile(analysisId, 'model.stan')
-    const {text: descriptionMdText, setText: setDescriptionMdText} = useAnalysisTextFile(analysisId, 'description.md')
-    const {text: optionsYamlText, setText: setOptionsYamlText} = useAnalysisTextFile(analysisId, 'options.yaml')
+    const {text: dataJsonText, setText: setDataJsonText, refresh: refreshDataJsonText} = useAnalysisTextFile(analysisId, 'data.json')
+    const {text: modelStanText, setText: setModelStanText, refresh: refreshModelStanText} = useAnalysisTextFile(analysisId, 'model.stan')
+    const {text: descriptionMdText, setText: setDescriptionMdText, refresh: refreshDescriptionMdText} = useAnalysisTextFile(analysisId, 'description.md')
+    const {text: optionsYamlText, setText: setOptionsYamlText, refresh: refreshOptionsYamlText} = useAnalysisTextFile(analysisId, 'options.yaml')
+    const {text: dataPyText, setText: setDataPyText, refresh: refreshDataPyText} = useAnalysisTextFile(analysisId, 'data.py')
     const {text: analysisInfoText, refresh: refreshAnalysisInfo} = useAnalysisTextFile(analysisId, 'analysis.yaml')
 
     const analysisInfo = useMemo(() => {
@@ -59,6 +62,8 @@ const useAnalysisData = (analysisId: string) => {
                 type: 'set_analysis_status',
                 analysis_id: analysisId,
                 status
+            }, {
+                includeUserId: true
             })
             refreshAnalysisInfo()
         })()
@@ -69,11 +74,18 @@ const useAnalysisData = (analysisId: string) => {
         dataJsonText,
         descriptionMdText,
         optionsYamlText,
+        dataPyText,
         analysisInfo,
         setModelStanText,
         setDataJsonText,
         setDescriptionMdText,
         setOptionsYamlText,
+        setDataPyText,
+        refreshModelStanText,
+        refreshDataJsonText,
+        refreshDescriptionMdText,
+        refreshOptionsYamlText,
+        refreshDataPyText,
         setStatus,
         refreshAnalysisInfo
     }

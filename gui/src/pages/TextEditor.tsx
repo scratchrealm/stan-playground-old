@@ -1,7 +1,9 @@
-import { Editor } from "@monaco-editor/react"
+import { Editor } from "@monaco-editor/react";
+import { Refresh } from "@mui/icons-material";
 import { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { FunctionComponent, useCallback, useEffect, useState } from "react"
+import { FunctionComponent, PropsWithChildren, useCallback, useEffect, useState } from "react";
+import Hyperlink from "../components/Hyperlink";
 
 type Monaco = typeof monaco
 
@@ -12,12 +14,22 @@ type Props = {
     language: string
     readOnly?: boolean
     wordWrap?: boolean
+    onReload?: () => void
+    onModifiedChanged?: (modified: boolean) => void
+    toolbarItems?: ToolbarItem[]
     label: string
+    theme?: 'vs' | 'vs-dark' | 'hc-black' | 'hc-light'
     width: number
     height: number
 }
 
-const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, wordWrap, language, label, width, height}) => {
+export type ToolbarItem = {
+    label: string
+    onClick: () => void
+    color?: string
+}
+
+const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, wordWrap, onReload, onModifiedChanged, toolbarItems, language, theme, label, width, height}) => {
     const [internalText, setInternalText] = useState('')
     useEffect(() => {
         if (text !== undefined) {
@@ -31,6 +43,12 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
         onSetText(internalText)
     }, [internalText, onSetText])
 
+    useEffect(() => {
+        if (onModifiedChanged) {
+            onModifiedChanged(text !== internalText)
+        }
+    }, [text, internalText, onModifiedChanged])
+
     //////////////////////////////////////////////////
     // Seems that it is important to set the initial value of the editor
     // this way rather than using defaultValue. The defaultValue approach
@@ -43,23 +61,31 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
         if (!editor) return
         if (text === undefined) return
         editor.setValue(text || defaultText || '')
-    }, [text, editor, defaultText])
+    }, [text, editor, defaultText, theme])
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
         setEditor(editor)
     }, [])
     /////////////////////////////////////////////////
 
 
-    const toolbarHeight = 35
+    const toolbarHeight = 25
     return (
         <div style={{position: 'absolute', width, height, overflow: 'hidden'}}>
-            <div style={{position: 'absolute', paddingLeft: 20, paddingTop: 5, width, height: toolbarHeight, backgroundColor: 'lightgray'}}>
-                {label}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                {!readOnly && <button disabled={text === internalText} onClick={handleSave}>save</button>}
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                {readOnly && <span style={{color: 'gray'}}>read only</span>}
-            </div>
+            <NotSelectable>
+                <div style={{position: 'absolute', paddingLeft: 20, paddingTop: 5, width, height: toolbarHeight, backgroundColor: 'lightgray'}}>
+                    {label}
+                    &nbsp;&nbsp;&nbsp;
+                    {!readOnly && <Hyperlink disabled={text === internalText} onClick={handleSave} color="black">save</Hyperlink>}
+                    &nbsp;&nbsp;&nbsp;
+                    {readOnly && <span style={{color: 'gray'}}>read only</span>}
+                    &nbsp;&nbsp;&nbsp;
+                    {onReload && <LowerABit numPixels={2}><Hyperlink onClick={onReload} color="black"><Refresh style={{fontSize: 14}} /></Hyperlink></LowerABit>}
+                    &nbsp;&nbsp;&nbsp;
+                    {toolbarItems && toolbarItems.map((item, i) => (
+                        <ToolbarItemComponent key={i} item={item} />
+                    ))}
+                </div>
+            </NotSelectable>
             <div style={{position: 'absolute', top: toolbarHeight, width, height: height - toolbarHeight}}>
                 <Editor
                     width={width}
@@ -70,12 +96,38 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
                     options={{
                         readOnly,
                         domReadOnly: readOnly,
-                        wordWrap: wordWrap ? 'on' : 'off'
+                        wordWrap: wordWrap ? 'on' : 'off',
+                        theme: theme || 'vs-dark' // unfortunately we cannot do this on a per-editor basis - it's a global setting
                     }}
                 />
             </div>
         </div>
     )
 }
+
+const ToolbarItemComponent: FunctionComponent<{item: ToolbarItem}> = ({item}) => {
+    return (
+        <Hyperlink onClick={item.onClick} color={item.color || 'gray'}>
+            {item.label}
+        </Hyperlink>
+    )
+}
+
+const LowerABit: FunctionComponent<PropsWithChildren<{numPixels: number}>> = ({children, numPixels}) => {
+    return (
+        <span style={{position: 'relative', top: numPixels}}>
+            {children}
+        </span>
+    )
+}
+
+const NotSelectable: FunctionComponent<PropsWithChildren> = ({children}) => {
+    return (
+        <div style={{userSelect: 'none'}}>
+            {children}
+        </div>
+    )
+}
+
 
 export default TextEditor

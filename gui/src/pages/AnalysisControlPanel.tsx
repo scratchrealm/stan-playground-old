@@ -2,6 +2,7 @@ import { getFileData, serviceQuery } from "@figurl/interface"
 import { FunctionComponent, useCallback, useEffect, useState } from "react"
 import Hyperlink from "../components/Hyperlink"
 import useRoute from "../useRoute"
+import AccessCodeControl from "./AccessCodeControl"
 import { AnalysisInfo } from "./useAnalysisData"
 
 type Props = {
@@ -32,6 +33,8 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
             const {result} = await serviceQuery('stan-playground', {
                 type: 'clone_analysis',
                 analysis_id: analysisId
+            }, {
+                includeUserId: true
             })
             setRoute({page: 'analysis', analysisId: result.newAnalysisId})
             setTimeout(() => {
@@ -47,6 +50,8 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
             const {result} = await serviceQuery('stan-playground', {
                 type: 'delete_analysis',
                 analysis_id: analysisId
+            }, {
+                includeUserId: true
             })
             if (result.success) {
                 setRoute({page: 'home'})
@@ -58,18 +63,18 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
         })()
     }, [analysisId, setRoute])
     return (
-        <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 13}}>
-            <div style={{fontSize: 18}}><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
+        <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 14, userSelect: 'none'}}>
+            <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
             <hr />
-            <div style={{fontSize: 16, lineHeight: 2}}>Analysis: {analysisId}</div>
-            <div style={{fontSize: 16}}>Status: <span style={{color: colorForStatus(status)}}>{status}</span> (<Hyperlink onClick={onRefreshAnalysisInfo}>refresh</Hyperlink>)</div>
+            <div>Analysis: {analysisId}</div>
+            <div>Status: <span style={{color: colorForStatus(status)}}>{status}</span> (<Hyperlink onClick={onRefreshAnalysisInfo}>refresh</Hyperlink>)</div>
             <hr />
             <div>{status === 'none' && (
                 <span>
                     <p>
                         This analysis has not been run yet. You can request that it be run by clicking the Request button below.
                     </p>
-                    <button onClick={handleRequestRun}>Request run</button>
+                    <Hyperlink onClick={handleRequestRun}>Request run</Hyperlink>
                 </span>
             )}</div>
             <div>{status === 'requested' && (
@@ -77,7 +82,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                     <p>
                         This analysis has been requested to run. It is pending approval. You can cancel the request by clicking the Cancel button below.
                     </p>
-                    <button onClick={handleDeleteRun}>Cancel run</button>
+                    <Hyperlink onClick={handleDeleteRun}>Cancel run</Hyperlink>
                 </span>
             )}</div>
             <div>{status === 'queued' && (
@@ -85,7 +90,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                     <p>
                         This analysis has been queued to run. You can cancel this run by clicking the Cancel button below.
                     </p>
-                    <button onClick={handleDeleteRun}>Cancel run</button>
+                    <Hyperlink onClick={handleDeleteRun}>Cancel run</Hyperlink>
                 </span>
             )}</div>
             <div>{status === 'running' && (
@@ -114,7 +119,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                             <p>MCMC Monitor URL is not found in output/mcmc-monitor-url.txt</p>
                         )
                     }
-                    <button onClick={handleDeleteRun}>Delete run</button>
+                    <Hyperlink onClick={handleDeleteRun}>Delete run</Hyperlink>
                 </span>
             )}</div>
             <div>{status === 'failed' && (
@@ -122,7 +127,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                     <p>
                         An error has occurred while running this analysis. You can delete this run using the button below.
                     </p>
-                    <button onClick={handleDeleteRun}>Delete run</button>
+                    <Hyperlink onClick={handleDeleteRun}>Delete run</Hyperlink>
                     <p style={{color: 'red', wordWrap: 'break-word'}}>
                         {analysisInfo?.error}
                     </p>
@@ -140,6 +145,8 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
             <div style={{lineHeight: 2}}><Hyperlink onClick={handleClone}>Clone this analysis</Hyperlink></div>
             {/* A clickable link to delete this analysis: */}
             <div style={{lineHeight: 2}}><Hyperlink color="darkred" onClick={handleDelete}>Delete this analysis</Hyperlink></div>
+            <hr />
+            <AccessCodeControl />
         </div>
     )
 }

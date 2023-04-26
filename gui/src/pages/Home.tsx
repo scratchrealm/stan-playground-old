@@ -17,6 +17,8 @@ const Home: FunctionComponent<Props> = () => {
         (async () => {
             const {result} = await serviceQuery('stan-playground', {
                 type: 'create_analysis'
+            }, {
+                includeUserId: true
             })
             if (!result.newAnalysisId) throw new Error('Unexpected - no new analysis id')
             refreshSummary()

@@ -1,12 +1,15 @@
 import { SetupUrlState } from '@figurl/interface'
 import './App.css'
 import MainWindow from './MainWindow'
+import SetupAccessCode from './SetupAccessCode'
 
 function App() {
   return (
-    <SetupUrlState>
-      <MainWindow />
-    </SetupUrlState>
+    <SetupAccessCode>
+      <SetupUrlState>
+        <MainWindow />
+      </SetupUrlState>
+    </SetupAccessCode>
   )
 }
 

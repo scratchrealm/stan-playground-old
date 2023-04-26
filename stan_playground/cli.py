@@ -23,6 +23,11 @@ def start():
 def update_summary():
     stan_playground.create_summary(dir='.')
 
+@click.command(help='Generate a temporary access code for use in the GUI')
+def generate_access_code():
+    print(stan_playground.generate_access_code(dir='.'))
+
 cli.add_command(queue)
 cli.add_command(start)
 cli.add_command(update_summary)
+cli.add_command(generate_access_code)

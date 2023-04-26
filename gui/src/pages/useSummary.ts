@@ -6,6 +6,7 @@ export type Summary = {
         analysis_id: string
         title: string
         status: string
+        user_id?: string
         data_size: number
         info: {
             status: string
@@ -14,6 +15,7 @@ export type Summary = {
             timestamp_started?: number
             timestamp_completed?: number
             timestamp_failed?: number
+            user_id?: string
         }
         description: string
         stan_program: string

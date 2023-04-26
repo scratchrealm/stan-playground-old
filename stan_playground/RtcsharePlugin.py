@@ -1,8 +1,10 @@
-from typing import Tuple
+from typing import Tuple, Union
 import os
 import yaml
 import shutil
 from .create_summary import create_summary
+from .generate_access_code import check_valid_access_code
+from .generate_analysis_data import generate_analysis_data
 
 
 class RtcsharePlugin:
@@ -10,7 +12,9 @@ class RtcsharePlugin:
         context.register_service('stan-playground', StanPlaygroundService)
 
 class StanPlaygroundService:
-    def handle_query(query: dict, *, dir: str) -> Tuple[dict, bytes]:
+    def handle_query(query: dict, *, dir: str, user_id: Union[str, None]=None) -> Tuple[dict, bytes]:
+        print(f'Request from user: {user_id}')
+        # todo: authenticate user
         type0 = query['type']
         if type0 == 'test':
             return {'success': True}, b''
@@ -19,7 +23,7 @@ class StanPlaygroundService:
             check_valid_analysis_id(analysis_id)
             name = query['name']
             text = query['text']
-            if name in ['model.stan', 'data.json', 'description.md', 'options.yaml']:
+            if name in ['model.stan', 'data.json', 'description.md', 'options.yaml', 'data.py']:
                 path = f'$dir/analyses/{analysis_id}/{name}'
                 full_path = _get_full_path(path, dir=dir)
                 with open(full_path, 'w') as f:
@@ -57,16 +61,24 @@ class StanPlaygroundService:
                 return {'success': True}, b''
         elif type0 == 'clone_analysis':
             analysis_id = query['analysis_id']
+            check_valid_analysis_id(analysis_id)
             new_analysis_id = _get_new_analysis_id(dir=_get_full_path('$dir', dir=dir))
             path = _get_full_path(f'$dir/analyses/{analysis_id}', dir=dir)
             path_new = _get_full_path(f'$dir/analyses/{new_analysis_id}', dir=dir)
             shutil.copytree(path, path_new)
             if os.path.exists(f'{path_new}/analysis.yaml'):
                 os.remove(f'{path_new}/analysis.yaml')
+            x = {
+                'status': 'none',
+                'user_id': user_id
+            }
+            with open(f'{path}/analysis.yaml', 'w') as f:
+                yaml.dump(x, f)
             create_summary(dir=_get_full_path('$dir', dir=dir))
             return {'newAnalysisId': new_analysis_id}, b''
         elif type0 == 'delete_analysis':
             analysis_id = query['analysis_id']
+            check_valid_analysis_id(analysis_id)
             info = _get_analysis_info(analysis_id, dir=dir)
             info['deleted'] = True
             _set_analysis_info(analysis_id, info, dir=dir)
@@ -84,10 +96,29 @@ class StanPlaygroundService:
                 f.write('# Untitled')
             with open(f'{path}/options.yaml', 'w') as f:
                 f.write('iter_sampling: 200\niter_warmup: 20\n')
+            x = {
+                'status': 'none',
+                'user_id': user_id
+            }
             with open(f'{path}/analysis.yaml', 'w') as f:
-                f.write('status: none\n')
+                yaml.dump(x, f)
             create_summary(dir=_get_full_path('$dir', dir=dir))
             return {'newAnalysisId': new_analysis_id}, b''
+        elif type0 == 'generate_analysis_data':
+            analysis_id = query['analysis_id']
+            check_valid_analysis_id(analysis_id)
+            access_code = query['access_code']
+
+            # This is very important because we don't want unauthorized execution of Python code.
+            if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
+                return {'success': False, 'error': 'Invalid access code'}, b''
+            
+            try:
+                generate_analysis_data(analysis_id, dir=_get_full_path('$dir', dir=dir))
+            except Exception as e:
+                return {'success': False, 'error': str(e)}, b''
+            
+            return {'success': True}, b''
         else:
             raise Exception(f'Unexpected query type: {type0}')
 
