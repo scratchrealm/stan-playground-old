@@ -2,6 +2,7 @@ from typing import Tuple, Union
 import os
 import yaml
 import shutil
+import time
 from .create_summary import create_summary
 from .generate_access_code import check_valid_access_code
 from .generate_analysis_data import generate_analysis_data
@@ -35,6 +36,7 @@ class StanPlaygroundService:
         elif type0 == 'set_analysis_status':
             analysis_id = query['analysis_id']
             check_valid_analysis_id(analysis_id)
+            access_code = query.get('access_code', None)
             status = query['status']
             info = _get_analysis_info(analysis_id, dir=dir)
             current_status = info.get('status', 'none')
@@ -43,6 +45,22 @@ class StanPlaygroundService:
                     raise Exception(f'Unable to set status to "requested" because current status is "{current_status}"')
                 info['status'] = 'requested'
                 info['error'] = None
+                _set_analysis_info(analysis_id, info, dir=dir)
+                create_summary(dir=_get_full_path('$dir', dir=dir))
+                return {'success': True}, b''
+            elif status == 'queued':
+                if current_status != 'requested':
+                    raise Exception(f'Unable to set status to "queued" because current status is "{current_status}"')
+                if not access_code:
+                    raise Exception('Access code is required to set status to "queued"')
+                
+                # this is important because we don't want unauthorized queueing of analyses
+                if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
+                    raise Exception('Invalid access code')
+                
+                info['status'] = 'queued'
+                info['error'] = None
+                info['timestamp_queued'] = time.time()
                 _set_analysis_info(analysis_id, info, dir=dir)
                 create_summary(dir=_get_full_path('$dir', dir=dir))
                 return {'success': True}, b''

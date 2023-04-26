@@ -56,12 +56,13 @@ const useAnalysisData = (analysisId: string) => {
         }
     }, [analysisInfoText])
 
-    const setStatus = useCallback((status: string) => {
+    const setStatus = useCallback((status: string, o: {accessCode?: string}={}) => {
         (async () => {
             await serviceQuery('stan-playground', {
                 type: 'set_analysis_status',
                 analysis_id: analysisId,
-                status
+                status,
+                access_code: o.accessCode
             }, {
                 includeUserId: true
             })

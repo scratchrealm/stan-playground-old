@@ -1,5 +1,6 @@
 import { getFileData, serviceQuery } from "@figurl/interface"
 import { FunctionComponent, useCallback, useEffect, useState } from "react"
+import { useAccessCode } from "../AccessCodeContext"
 import Hyperlink from "../components/Hyperlink"
 import useRoute from "../useRoute"
 import AccessCodeControl from "./AccessCodeControl"
@@ -9,17 +10,21 @@ type Props = {
     analysisId: string
     analysisInfo: AnalysisInfo | undefined
     onRefreshAnalysisInfo: () => void
-    onSetStatus: (status: string) => void
+    onSetStatus: (status: string, o?: {accessCode?: string}) => void
     width: number
     height: number
 }
 
 const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInfo, onRefreshAnalysisInfo, onSetStatus, width, height}) => {
     const {setRoute} = useRoute()
+    const {accessCode} = useAccessCode()
     const status = analysisInfo !== undefined ? analysisInfo?.status || 'none' : 'undefined'
     const handleRequestRun = useCallback(() => {
         onSetStatus('requested')
     }, [onSetStatus])
+    const handleQueueRun = useCallback(() => {
+        onSetStatus('queued', {accessCode})
+    }, [onSetStatus, accessCode])
     const handleDeleteRun = useCallback(() => {
         // confirm that the user wants to delete the run
         if (!window.confirm('Delete this run?')) return
@@ -80,9 +85,16 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
             <div>{status === 'requested' && (
                 <span>
                     <p>
-                        This analysis has been requested to run. It is pending approval. You can cancel the request by clicking the Cancel button below.
+                        This analysis has been requested to run. It is pending approval.
                     </p>
-                    <Hyperlink onClick={handleDeleteRun}>Cancel run</Hyperlink>
+                    {
+                        accessCode && (
+                            <Hyperlink onClick={handleQueueRun}>Queue run</Hyperlink>
+                        )
+                    }
+                    <div>
+                        <Hyperlink onClick={handleDeleteRun}>Cancel run</Hyperlink>
+                    </div>
                 </span>
             )}</div>
             <div>{status === 'queued' && (
