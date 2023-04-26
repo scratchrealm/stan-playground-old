@@ -20,6 +20,8 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
         onSetStatus('requested')
     }, [onSetStatus])
     const handleDeleteRun = useCallback(() => {
+        // confirm that the user wants to delete the run
+        if (!window.confirm('Delete this run?')) return
         onSetStatus('none')
     }, [onSetStatus])
     const mcmcMonitorBaseUrl = useMcmcMonitorBaseUrl()
@@ -57,9 +59,11 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
     }, [analysisId, setRoute])
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 13}}>
-            <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
-            <div>Analysis: {analysisId}</div>
-            <div>Status: <span style={{color: colorForStatus(status)}}>{status}</span> (<Hyperlink onClick={onRefreshAnalysisInfo}>refresh</Hyperlink>)</div>
+            <div style={{fontSize: 18}}><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
+            <hr />
+            <div style={{fontSize: 16, lineHeight: 2}}>Analysis: {analysisId}</div>
+            <div style={{fontSize: 16}}>Status: <span style={{color: colorForStatus(status)}}>{status}</span> (<Hyperlink onClick={onRefreshAnalysisInfo}>refresh</Hyperlink>)</div>
+            <hr />
             <div>{status === 'none' && (
                 <span>
                     <p>
@@ -91,7 +95,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                     </p>
                     {
                         mcmcMonitorBaseUrl ? (
-                            <p>You can <a href={createMcmcMonitorUrl(mcmcMonitorBaseUrl, analysisId)} target="_blank" rel="noreferrer">monitor the progress using MCMC Monitor</a></p>
+                            <p>Monitor the progress using <a href={createMcmcMonitorUrl(mcmcMonitorBaseUrl, analysisId)} target="_blank" rel="noreferrer">MCMC Monitor</a></p>
                         ) : (
                             <p>MCMC Monitor URL is not found in output/mcmc-monitor-url.txt</p>
                         )
@@ -105,7 +109,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                     </p>
                     {
                         mcmcMonitorBaseUrl ? (
-                            <p>You can <a href={createMcmcMonitorUrl(mcmcMonitorBaseUrl, analysisId)} target="_blank" rel="noreferrer">view the output using MCMC Monitor</a></p>
+                            <p>View the output in <a href={createMcmcMonitorUrl(mcmcMonitorBaseUrl, analysisId)} target="_blank" rel="noreferrer">MCMC Monitor</a></p>
                         ) : (
                             <p>MCMC Monitor URL is not found in output/mcmc-monitor-url.txt</p>
                         )
@@ -133,9 +137,9 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
             )}</div>
             <hr />
             {/* A clickable link to clone this analysis: */}
-            <div><Hyperlink onClick={handleClone}>Clone this analysis</Hyperlink></div>
+            <div style={{lineHeight: 2}}><Hyperlink onClick={handleClone}>Clone this analysis</Hyperlink></div>
             {/* A clickable link to delete this analysis: */}
-            <div><Hyperlink color="darkred" onClick={handleDelete}>Delete this analysis</Hyperlink></div>
+            <div style={{lineHeight: 2}}><Hyperlink color="darkred" onClick={handleDelete}>Delete this analysis</Hyperlink></div>
         </div>
     )
 }

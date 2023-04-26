@@ -29,6 +29,7 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                         <th>MCMC Monitor</th>
                         <th>Timestamp</th>
                         <th>Elapsed</th>
+                        <th>Description</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,7 +40,11 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                                     {analysis.analysis_id}
                                 </Hyperlink>
                             </td>
-                            <td>{analysis.title}</td>
+                            <td>
+                                <Hyperlink onClick={() => setRoute({page: 'analysis', analysisId: analysis.analysis_id})}>
+                                    {analysis.title}
+                                </Hyperlink>
+                            </td>
                             <td>{analysis.status}</td>
                             <td>
                                 {
@@ -56,12 +61,29 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                             <td>
                                 {createElapsedText(analysis)}
                             </td>
+                            <td><span style={{fontSize: 11}}>{abbreviateString(removeFirstHeaderLineInMarkdown(analysis.description), 200)}</span></td>
                         </tr>
                     ))}
                 </tbody>
             </table>
         </div>
     )
+}
+
+function removeFirstHeaderLineInMarkdown(text: string) {
+    const lines = text.split('\n')
+    if (lines.length === 0) return ''
+    if (lines[0].startsWith('# ')) {
+        return lines.slice(1).join('\n')
+    }
+    else {
+        return text
+    }
+}
+
+function abbreviateString(s: string, maxLength: number) {
+    if (s.length <= maxLength) return s
+    else return s.slice(0, maxLength) + '...'
 }
 
 function createTimestampText(analysis: Summary['analyses'][0]) {
