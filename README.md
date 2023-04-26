@@ -96,7 +96,7 @@ As described above, Stan Playground consists of multiple components that work to
 
 ### Data directory
 
-All data is hosted in a directory on your computer with the structure shown above. You should create an empty `stan-playground-data` directory on your computer.
+All data are hosted in a directory on your computer with the structure shown above. You should create an empty `stan-playground-data` directory on your computer.
 
 ### Python package
 
@@ -138,7 +138,7 @@ rtcshare start --dir . --plugins stan_playground
 
 ### Web application
 
-The web application is hosted on GitHub pages (https://scratchrealm.github.com/stan-playground). It can also be run locally for development purpose. The source code can be found in the `gui` directory.
+The web application is hosted on GitHub pages. It can also be run locally for development purpose. The source code can be found in the `gui` directory.
 
 To view the web application, navigate to the following URL in your browser.
 
