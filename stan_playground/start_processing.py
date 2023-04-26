@@ -2,6 +2,7 @@ import os
 import yaml
 import time
 import json
+import shutil
 from .create_summary import create_summary
 
 
@@ -35,8 +36,12 @@ def start_processing(*, dir: str):
                         f.write(yaml.safe_dump(info))
                     create_summary(dir)
 
-                    if not os.path.exists(analysis_output_dir):
-                        os.makedirs(analysis_output_dir)
+                    # delete the output directory if it already exists
+                    if os.path.exists(analysis_output_dir):
+                        shutil.rmtree(analysis_output_dir)
+                    # create a new output directory
+                    os.makedirs(analysis_output_dir)
+                    
                     try:
                         do_run_analysis(analysis_dir, analysis_output_dir)
                         success = True
