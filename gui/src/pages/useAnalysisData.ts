@@ -102,7 +102,7 @@ const useAnalysisData = (analysisId: string) => {
             }
             
         })()
-    }, [analysisId, refreshAnalysisInfo])
+    }, [analysisId, refreshAnalysisInfo, accessCode, setStatusBarMessage])
     
     return {
         modelStanText,
