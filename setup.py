@@ -12,7 +12,7 @@ setup(
     version=__version__,
     author="Jeremy Magland",
     author_email="jmagland@flatironinstitute.org",
-    url="https://github.com/scratchrealm/pynappleviewer",
+    url="https://github.com/scratchrealm/stan-playground",
     description="Create and share Stan analyses in the browser",
     long_description=long_description,
     long_description_content_type='text/markdown',
