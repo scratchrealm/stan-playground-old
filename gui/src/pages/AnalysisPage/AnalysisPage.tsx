@@ -1,10 +1,12 @@
-import { FunctionComponent } from "react";
-import Splitter from "../../components/Splitter";
+import { FunctionComponent, useCallback, useEffect } from "react";
+import { useAccessCode } from "../../AccessCodeContext";
 import AnalysisControlPanel from "../AnalysisControlPanel";
-import DataGenerationTab from "./DataGenerationTab";
 import TabWidget from "../TabWidget/TabWidget";
-import TextEditor from "../TextEditor";
-import useAnalysisData, { AnalysisInfo } from "../useAnalysisData";
+import useAnalysisData from "../useAnalysisData";
+import DataGenerationTab from "./DataGenerationTab";
+import DataTab from "./DataTab";
+import MainTab from "./MainTab";
+import RunSamplerTab from "./RunSamplerTab";
 
 type Props = {
     analysisId: string
@@ -12,10 +14,39 @@ type Props = {
     height: number
 }
 
-const controlPanelWidth = 200
-
 const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => {
+    // important to do this here just once rather than separately in the various editors
     const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, dataPyText, setDataPyText, analysisInfo, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, refreshModelStanText, refreshDataJsonText, refreshDataPyText, refreshDescriptionMdText, refreshOptionsYamlText, setStatus, refreshAnalysisInfo} = useAnalysisData(analysisId)
+
+    const {accessCode} = useAccessCode()
+
+    const handleRequestRun = useCallback(() => {
+        setStatus('requested')
+    }, [setStatus])
+
+    const handleQueueRun = useCallback(() => {
+        setStatus('queued', {accessCode})
+    }, [setStatus, accessCode])
+
+    const handleDeleteRun = useCallback(() => {
+        // confirm that the user wants to delete the run
+        if (!window.confirm('Delete this run?')) return
+        setStatus('none')
+    }, [setStatus])
+
+    // if the status is queued or running, refresh that analysisInfo periodically
+    useEffect(() => {
+        if (analysisInfo?.status === 'queued' || analysisInfo?.status === 'running') {
+            const interval = setInterval(() => {
+                refreshAnalysisInfo()
+            }, 5000)
+            return () => {
+                clearInterval(interval)
+            }
+        }
+    }, [analysisInfo, refreshAnalysisInfo])
+
+    const controlPanelWidth = Math.max(200, Math.min(300, width / 6))
 
     return (
         <div>
@@ -26,7 +57,9 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     analysisId={analysisId}
                     analysisInfo={analysisInfo}
                     onRefreshAnalysisInfo={refreshAnalysisInfo}
-                    onSetStatus={setStatus}
+                    onRequestRun={handleRequestRun}
+                    onQueueRun={handleQueueRun}
+                    onDeleteRun={handleDeleteRun}
                 />
             </div>
             <div style={{position: 'absolute', left: controlPanelWidth, width: width - controlPanelWidth, height}}>
@@ -35,18 +68,18 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                 height={height}
                 tabs={[
                     {label: 'Main', closeable: false},
-                    {label: 'Data generation', closeable: false}
+                    {label: 'Data generation', closeable: false},
+                    {label: 'Data', closeable: false},
+                    {label: 'Run', closeable: false}
                 ]}
             >
-                <AnalysisPageMainTab
+                <MainTab
                     width={0}
                     height={0}
+                    analysisId={analysisId}
                     modelStanText={modelStanText}
                     setModelStanText={setModelStanText}
                     refreshModelStanText={refreshModelStanText}
-                    dataJsonText={dataJsonText}
-                    setDataJsonText={setDataJsonText}
-                    refreshDataJsonText={refreshDataJsonText}
                     descriptionMdText={descriptionMdText}
                     setDescriptionMdText={setDescriptionMdText}
                     refreshDescriptionMdText={refreshDescriptionMdText}
@@ -65,95 +98,27 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     onRefreshDataJson={refreshDataJsonText}
                     analysisStatus={analysisInfo?.status}
                 />
+                <DataTab
+                    width={0}
+                    height={0}
+                    dataJsonText={dataJsonText}
+                    setDataJsonText={setDataJsonText}
+                    refreshDataJsonText={refreshDataJsonText}
+                    analysisInfo={analysisInfo}
+                />
+                <RunSamplerTab
+                    width={0}
+                    height={0}
+                    analysisId={analysisId}
+                    analysisInfo={analysisInfo}
+                    onRefreshStatus={refreshAnalysisInfo}
+                    onRequestRun={handleRequestRun}
+                    onQueueRun={handleQueueRun}
+                    onDeleteRun={handleDeleteRun}
+                />
             </TabWidget>  
             </div>
         </div>
-    )
-}
-
-type MainTabProps = {
-    width: number
-    height: number
-    modelStanText: string | undefined
-    setModelStanText: (text: string) => void
-    refreshModelStanText: () => void
-    dataJsonText: string | undefined
-    setDataJsonText: (text: string) => void
-    refreshDataJsonText: () => void
-    descriptionMdText: string | undefined
-    setDescriptionMdText: (text: string) => void
-    refreshDescriptionMdText: () => void
-    optionsYamlText: string | undefined
-    setOptionsYamlText: (text: string) => void
-    refreshOptionsYamlText: () => void
-    analysisInfo: AnalysisInfo | undefined
-}
-
-const AnalysisPageMainTab: FunctionComponent<MainTabProps> = ({width, height, modelStanText, setModelStanText, refreshModelStanText, dataJsonText, setDataJsonText, refreshDataJsonText, descriptionMdText, setDescriptionMdText, refreshDescriptionMdText, optionsYamlText, setOptionsYamlText, refreshOptionsYamlText, analysisInfo}) => {
-    // important to do this here just once rather than separately in the various editors
-    return (
-        <Splitter
-            width={width}
-            height={height}
-            initialPosition={width / 2}
-            direction="horizontal"
-        >
-            <Splitter
-                width={0}
-                height={0}
-                initialPosition={height * 2 / 3}
-                direction="vertical"
-            >
-                <TextEditor
-                    width={0}
-                    height={0}
-                    language="cpp"
-                    label="model.stan"
-                    text={modelStanText}
-                    onSetText={setModelStanText}
-                    onReload={refreshModelStanText}
-                    readOnly={analysisInfo?.status !== 'none'}
-                />
-                <TextEditor
-                    width={0}
-                    height={0}
-                    language="json"
-                    label="data.json"
-                    text={dataJsonText}
-                    onSetText={setDataJsonText}
-                    onReload={refreshDataJsonText}
-                    readOnly={analysisInfo?.status !== 'none'}
-                    wordWrap={true}
-                />
-            </Splitter>
-            <Splitter
-                width={0}
-                height={0}
-                initialPosition={height * 2 / 3}
-                direction="vertical"
-            >
-                <TextEditor
-                    width={0}
-                    height={0}
-                    language="markdown"
-                    label="description.md"
-                    text={descriptionMdText}
-                    onSetText={setDescriptionMdText}
-                    onReload={refreshDescriptionMdText}
-                    wordWrap={true}
-                />
-                <TextEditor
-                    width={0}
-                    height={0}
-                    language="yaml"
-                    label="options.yaml"
-                    text={optionsYamlText}
-                    onSetText={setOptionsYamlText}
-                    onReload={refreshOptionsYamlText}
-                    readOnly={analysisInfo?.status !== 'none'}
-                />
-            </Splitter>
-        </Splitter>
     )
 }
 

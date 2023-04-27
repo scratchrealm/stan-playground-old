@@ -1,5 +1,5 @@
 import { FunctionComponent, PropsWithChildren, useEffect, useRef, useState } from "react"
-import AccessCodeContext from "./AccessCodeContext"
+import AccessCodeContext, { accessCodeHasExpired } from "./AccessCodeContext"
 
 const SetupAccessCode: FunctionComponent<PropsWithChildren> = ({ children }) => {
     const [accessCode, setAccessCode] = useState<string>('')
@@ -19,6 +19,23 @@ const SetupAccessCode: FunctionComponent<PropsWithChildren> = ({ children }) => 
         // don't save the access code to local storage on the first render
         if (!initialized.current) return
         localStorage.setItem('stan-playground-access-code', accessCode)
+    }, [accessCode])
+
+    // periodically check whether access code is expired
+    useEffect(() => {
+        if (!accessCode) return
+        if (accessCodeHasExpired(accessCode)) {
+            setAccessCode('')
+            return
+        }
+        const interval = setInterval(() => {
+            if (accessCodeHasExpired(accessCode)) {
+                setAccessCode('')
+            }
+        }, 60 * 1000)
+        return () => {
+            clearInterval(interval)
+        }
     }, [accessCode])
 
     return (

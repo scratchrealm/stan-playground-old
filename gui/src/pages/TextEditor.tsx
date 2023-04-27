@@ -25,7 +25,7 @@ type Props = {
 
 export type ToolbarItem = {
     label: string
-    onClick: () => void
+    onClick?: () => void
     color?: string
 }
 
@@ -106,9 +106,13 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
 }
 
 const ToolbarItemComponent: FunctionComponent<{item: ToolbarItem}> = ({item}) => {
+    const {onClick, color, label} = item
+    if (!onClick) {
+        return <span style={{color: color || 'gray'}}>{label}</span>
+    }
     return (
-        <Hyperlink onClick={item.onClick} color={item.color || 'gray'}>
-            {item.label}
+        <Hyperlink onClick={onClick} color={color || 'gray'}>
+            {label}
         </Hyperlink>
     )
 }

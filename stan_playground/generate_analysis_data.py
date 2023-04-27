@@ -13,6 +13,8 @@ def generate_analysis_data(analysis_id: str, *, dir: str):
     # execute data.py in a separate process, writing the console output to data.console.txt, including the stderr, and waiting for return
     # we want to be in the analysis_path as the working directory
     data_console_path = f'{analysis_path}/data.console.txt'
+    if os.path.exists(data_console_path):
+        os.remove(data_console_path)
     with open(data_console_path, 'w') as f:
         f.write(f'Executing data.py for analysis {analysis_id}\n')
         # write a timestamp line to the file

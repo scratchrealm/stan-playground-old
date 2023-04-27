@@ -4,6 +4,7 @@ import time
 import json
 import shutil
 from .create_summary import create_summary
+from .capture_console_output import capture_console_output, setup_logger
 
 
 def start_processing(*, dir: str):
@@ -43,7 +44,7 @@ def start_processing(*, dir: str):
                     os.makedirs(analysis_output_dir)
                     
                     try:
-                        do_run_analysis(analysis_dir, analysis_output_dir)
+                        do_run_analysis(analysis_id, analysis_dir, analysis_output_dir)
                         success = True
                     except Exception as err:
                         print(f'Error running analysis: {analysis_id}')
@@ -66,7 +67,7 @@ def start_processing(*, dir: str):
         # sleep for 10 seconds before checking again
         time.sleep(10)
 
-def do_run_analysis(analysis_dir: str, analysis_output_dir: str):
+def do_run_analysis(analysis_id: str, analysis_dir: str, analysis_output_dir: str):
     from cmdstanpy import CmdStanModel
 
     model_fname = f'{analysis_dir}/model.stan'
@@ -89,12 +90,22 @@ def do_run_analysis(analysis_dir: str, analysis_output_dir: str):
         raise Exception('iter_warmup not specified in options.yaml')
 
     # Start sampling the posterior for this model/data
-    fit = model.sample(
-        data=data,
-        output_dir=analysis_output_dir,
-        iter_sampling=iter_sampling,
-        iter_warmup=iter_warmup,
-        save_warmup=True
-    )
-
-                
+    logger = setup_logger(f'{analysis_dir}/run.console.txt')
+    with capture_console_output(logger):
+        print(f'Starting sampling for analysis: {analysis_id}')
+        # Print a timestamp
+        print(f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}')
+        print(f'====================')
+        timer = time.time()
+        fit = model.sample(
+            data=data,
+            output_dir=analysis_output_dir,
+            iter_sampling=iter_sampling,
+            iter_warmup=iter_warmup,
+            save_warmup=True,
+            show_console=True
+        )
+        print(f'====================')
+        elapsed = time.time() - timer
+        print(f'Elapsed time: {elapsed} seconds')
+        print('Finished sampling')

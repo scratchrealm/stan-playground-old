@@ -6,6 +6,8 @@ type Props = {
     // none
 }
 
+const accessCodeTooltip = `When an access code is set, you have the ability to compile models, generate data, and queue runs. You can obtain a temporary access code from an administrator of this instance.`
+
 const AccessCodeControl: FunctionComponent<Props> = () => {
     const {accessCode, setAccessCode} = useAccessCode()
     const handleSetAccessCode = useCallback(() => {
@@ -18,9 +20,9 @@ const AccessCodeControl: FunctionComponent<Props> = () => {
             <Hyperlink onClick={handleSetAccessCode} color={accessCode ? 'darkgreen' : 'darkred'}>
                 {
                     accessCode ? (
-                        <span>Access code has been set</span>
+                        <p title={accessCodeTooltip}>Access code has been set</p>
                     ) : (
-                        <span>Set access code</span>
+                        <p>Set access code</p>
                     )
                 }
             </Hyperlink>

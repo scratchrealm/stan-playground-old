@@ -6,6 +6,7 @@ import time
 from .create_summary import create_summary
 from .generate_access_code import check_valid_access_code
 from .generate_analysis_data import generate_analysis_data
+from .compile_analysis_model import compile_analysis_model
 
 
 class RtcsharePlugin:
@@ -34,49 +35,55 @@ class StanPlaygroundService:
             else:
                 raise Exception(f'Unexpected file name: {name}')
         elif type0 == 'set_analysis_status':
-            analysis_id = query['analysis_id']
-            check_valid_analysis_id(analysis_id)
-            access_code = query.get('access_code', None)
-            status = query['status']
-            info = _get_analysis_info(analysis_id, dir=dir)
-            current_status = info.get('status', 'none')
-            if status == 'requested':
-                if current_status != 'none':
-                    raise Exception(f'Unable to set status to "requested" because current status is "{current_status}"')
-                info['status'] = 'requested'
-                info['error'] = None
-                _set_analysis_info(analysis_id, info, dir=dir)
-                create_summary(dir=_get_full_path('$dir', dir=dir))
-                return {'success': True}, b''
-            elif status == 'queued':
-                if current_status != 'requested':
-                    raise Exception(f'Unable to set status to "queued" because current status is "{current_status}"')
-                if not access_code:
-                    raise Exception('Access code is required to set status to "queued"')
-                
-                # this is important because we don't want unauthorized queueing of analyses
-                if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
-                    raise Exception('Invalid access code')
-                
-                info['status'] = 'queued'
-                info['error'] = None
-                info['timestamp_queued'] = time.time()
-                _set_analysis_info(analysis_id, info, dir=dir)
-                create_summary(dir=_get_full_path('$dir', dir=dir))
-                return {'success': True}, b''
-            elif status == 'none':
-                if not current_status in ['completed', 'failed', 'queued', 'requested']:
-                    raise Exception(f'Unable to set status to "none" because current status is "{current_status}"')
-                info['status'] = 'none'
-                info['error'] = None
-                info['timestamp_queued'] = None
-                info['timestamp_started'] = None
-                info['timestamp_completed'] = None
-                info['timestamp_failed'] = None
-                _clear_output_for_analysis(analysis_id, dir=dir)
-                _set_analysis_info(analysis_id, info, dir=dir)
-                create_summary(dir=_get_full_path('$dir', dir=dir))
-                return {'success': True}, b''
+            try:
+                analysis_id = query['analysis_id']
+                check_valid_analysis_id(analysis_id)
+                access_code = query.get('access_code', None)
+                status = query['status']
+                info = _get_analysis_info(analysis_id, dir=dir)
+                current_status = info.get('status', 'none')
+                if status == 'requested':
+                    if current_status != 'none':
+                        raise Exception(f'Unable to set status to "requested" because current status is "{current_status}"')
+                    info['status'] = 'requested'
+                    info['error'] = None
+                    _set_analysis_info(analysis_id, info, dir=dir)
+                    create_summary(dir=_get_full_path('$dir', dir=dir))
+                    return {'success': True}, b''
+                elif status == 'queued':
+                    if current_status != 'requested':
+                        raise Exception(f'Unable to set status to "queued" because current status is "{current_status}"')
+                    if not access_code:
+                        raise Exception('Access code is required to set status to "queued"')
+                    
+                    # this is important because we don't want unauthorized queueing of analyses
+                    if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
+                        raise Exception('Invalid access code')
+                    
+                    info['status'] = 'queued'
+                    info['error'] = None
+                    info['timestamp_queued'] = time.time()
+                    _set_analysis_info(analysis_id, info, dir=dir)
+                    create_summary(dir=_get_full_path('$dir', dir=dir))
+                    return {'success': True}, b''
+                elif status == 'none':
+                    if not current_status in ['completed', 'failed', 'queued', 'requested']:
+                        raise Exception(f'Unable to set status to "none" because current status is "{current_status}"')
+                    info['status'] = 'none'
+                    info['error'] = None
+                    info['timestamp_queued'] = None
+                    info['timestamp_started'] = None
+                    info['timestamp_completed'] = None
+                    info['timestamp_failed'] = None
+                    _clear_run_console_for_analysis(analysis_id, dir=dir)
+                    _clear_output_for_analysis(analysis_id, dir=dir)
+                    _set_analysis_info(analysis_id, info, dir=dir)
+                    create_summary(dir=_get_full_path('$dir', dir=dir))
+                    return {'success': True}, b''
+                else:
+                    raise Exception(f'Unexpected status for set_analysis status: {status}')
+            except Exception as e:
+                return {'success': False, 'error': str(e)}, b''
         elif type0 == 'clone_analysis':
             analysis_id = query['analysis_id']
             check_valid_analysis_id(analysis_id)
@@ -137,6 +144,21 @@ class StanPlaygroundService:
                 return {'success': False, 'error': str(e)}, b''
             
             return {'success': True}, b''
+        elif type0 == 'compile_analysis_model':
+            analysis_id = query['analysis_id']
+            check_valid_analysis_id(analysis_id)
+            access_code = query['access_code']
+
+            # This is medium important
+            if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
+                return {'success': False, 'error': 'Invalid access code'}, b''
+            
+            try:
+                compile_analysis_model(analysis_id, dir=_get_full_path('$dir', dir=dir))
+            except Exception as e:
+                return {'success': False, 'error': str(e)}, b''
+            
+            return {'success': True}, b''
         else:
             raise Exception(f'Unexpected query type: {type0}')
 
@@ -173,6 +195,14 @@ def _set_analysis_info(analysis_id: str, info: dict, *, dir: str) -> None:
     text = yaml.safe_dump(info)
     with open(full_path, 'w') as f:
         f.write(text)
+
+def _clear_run_console_for_analysis(analysis_id: str, *, dir: str) -> None:
+    # for security, ensure that analysis_id is a valid id
+    check_valid_analysis_id(analysis_id)
+    path = f'$dir/analyses/{analysis_id}/run.console.txt'
+    full_path = _get_full_path(path, dir=dir)
+    if os.path.exists(full_path):
+        os.remove(full_path)
 
 def _clear_output_for_analysis(analysis_id: str, *, dir: str) -> None:
     # for security, ensure that analysis_id is a valid id

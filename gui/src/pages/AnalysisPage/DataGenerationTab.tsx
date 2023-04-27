@@ -2,6 +2,7 @@ import { serviceQuery } from "@figurl/interface"
 import { FunctionComponent, useCallback, useMemo, useState } from "react"
 import { accessCodeHasExpired, useAccessCode } from "../../AccessCodeContext"
 import Splitter from "../../components/Splitter"
+import { useStatusBar } from "../../StatusBar/StatusBarContext"
 import TextEditor, { ToolbarItem } from "../TextEditor"
 import { useAnalysisTextFile } from "../useAnalysisData"
 import ConsoleOutputWindow from "./ConsoleOutputWindow"
@@ -21,6 +22,9 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
     const {accessCode} = useAccessCode()
     const {text: dataConsoleText, refresh: refreshDataConsoleText} = useAnalysisTextFile(analysisId, 'data.console.txt')
     const [dataPyModified, setDataPyModified] = useState(false)
+
+    const {setStatusBarMessage} = useStatusBar()
+
     const handleGenerate = useCallback(() => {
         if (accessCodeHasExpired(accessCode)) {
             window.alert("Access code has expired")
@@ -31,6 +35,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
             return
         }
         (async () => {
+            setStatusBarMessage('Generating data...')
             try {
                 const {result} = await serviceQuery('stan-playground', {
                     type: 'generate_analysis_data',
@@ -38,11 +43,13 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
                     access_code: accessCode
                 })
                 if (!result.success) {
+                    setStatusBarMessage('Data generation failed')
                     throw Error(`Error generating data: ${result.error}`)
                 }
             } catch (err: any) {
                 refreshDataConsoleText()
                 setTimeout(() => {
+                    setStatusBarMessage('Error generating data')
                     window.alert(`Error generating data: ${err.message}`)
                 }, 200)
                 return
@@ -50,10 +57,10 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
             refreshDataConsoleText()
             onRefreshDataJson()
             setTimeout(() => {
-                window.alert('Data generation complete')
+                setStatusBarMessage('Data generation complete')
             }, 200)
         })()
-    }, [accessCode, analysisId, refreshDataConsoleText, onRefreshDataJson])
+    }, [accessCode, analysisId, refreshDataConsoleText, onRefreshDataJson, setStatusBarMessage])
     const toolbarItems: ToolbarItem[] = useMemo(() => {
         if (dataPyModified) return []
         if (analysisStatus !== 'none') return []
