@@ -71,8 +71,8 @@ def create_summary(dir: str):
         'analyses': analyses
     }
     
-    # write analyses to summary.json file
-    with open(f'{dir}/summary.json', 'w') as f:
+    # write analyses to stan_playground_summary.json file
+    with open(f'{dir}/stan_playground_summary.json', 'w') as f:
         json.dump(summary, f, indent=2)
 
 def _get_title_from_markdown(markdown: str):

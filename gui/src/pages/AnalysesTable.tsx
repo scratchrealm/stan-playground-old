@@ -14,7 +14,7 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
 
     const mcmcMonitorBaseUrl = useMcmcMonitorBaseUrl()
 
-    const analyses = [...summary.analyses]
+    const analyses = [...(summary.analyses || [])]
     // reverse the order of the analyses so that the most recent ones are at the top
     analyses.reverse()
 

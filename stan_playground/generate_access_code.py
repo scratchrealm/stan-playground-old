@@ -9,7 +9,11 @@ def generate_access_code(*, dir: str) -> str:
     # check whether the analyses subdirectory exists
     # if not, then we are probably not in the right directory
     if not os.path.exists(f'{dir}/analyses'):
-        raise Exception('You must be in the root of the stan playground data directory.')
+        # check whether there are any files or folders at all, because maybe we have an empty directory and that is okay
+        if len(os.listdir(dir)) == 0:
+            pass # okay
+        else:
+            raise Exception('You must be in the root of the stan-playground data directory.')
 
     # load the existing access_codes from the .access_codes.json file, if it exists
     access_codes = []

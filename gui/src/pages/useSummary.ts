@@ -29,7 +29,7 @@ const useSummary = () => {
     useEffect(() => {
         setSummary(undefined)
         ;(async () => {
-            const s = await getFileData(`$dir/summary.json`, () => {}, {responseType: 'json'})
+            const s = await getFileData(`$dir/stan_playground_summary.json`, () => {}, {responseType: 'json'})
             setSummary(s)
         })()
     }, [refreshCode])

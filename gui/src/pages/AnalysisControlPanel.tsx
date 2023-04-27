@@ -4,7 +4,6 @@ import { useAccessCode } from "../AccessCodeContext"
 import Hyperlink from "../components/Hyperlink"
 import { useStatusBar } from "../StatusBar/StatusBarContext"
 import useRoute from "../useRoute"
-import AccessCodeControl from "./AccessCodeControl"
 import { AnalysisInfo } from "./useAnalysisData"
 
 type Props = {
@@ -163,8 +162,6 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
             <div style={{lineHeight: 2}} title={cloneAnalysisTooltip}><Hyperlink onClick={handleClone}>Clone this analysis</Hyperlink></div>
             {/* A clickable link to delete this analysis: */}
             <div style={{lineHeight: 2}} title={deleteAnalysisTooltip}><Hyperlink color="darkred" onClick={handleDelete}>Delete this analysis</Hyperlink></div>
-            <hr />
-            <AccessCodeControl />
         </div>
     )
 }
