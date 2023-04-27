@@ -51,7 +51,6 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
                     clearInterval(interval)
                     return
                 }
-                console.log('--- refresh')
                 refreshCompileConsoleText()
             }, 1000)
             try {
@@ -120,7 +119,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
                     onSetText={setModelStanText}
                     onReload={refreshModelStanText}
                     onModifiedChanged={setModelStanModified}
-                    readOnly={analysisInfo?.status !== 'none'}
+                    readOnly={(accessCode ? false : true) || (analysisInfo?.status !== 'none')}
                     toolbarItems={toolbarItems}
                 />
                 <TextEditor
@@ -150,6 +149,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
                     onSetText={setDescriptionMdText}
                     onReload={refreshDescriptionMdText}
                     wordWrap={true}
+                    readOnly={(accessCode ? false : true)}
                 />
                 <TextEditor
                     width={0}
@@ -159,7 +159,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
                     text={optionsYamlText}
                     onSetText={setOptionsYamlText}
                     onReload={refreshOptionsYamlText}
-                    readOnly={analysisInfo?.status !== 'none'}
+                    readOnly={(accessCode ? false : true) || (analysisInfo?.status !== 'none')}
                 />
             </Splitter>
         </Splitter>

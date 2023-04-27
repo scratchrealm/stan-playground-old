@@ -1,5 +1,6 @@
 import { serviceQuery } from "@figurl/interface";
-import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
+import { FunctionComponent, useCallback, useEffect, useState } from "react";
+import { useAccessCode } from "../AccessCodeContext";
 import Hyperlink from "../components/Hyperlink";
 import { useStatusBar } from "../StatusBar/StatusBarContext";
 import AnalysesTable from "./AnalysesTable";
@@ -12,15 +13,21 @@ type Props = {
 
 const Home: FunctionComponent<Props> = ({width, height}) => {
     const {summary, refreshSummary} = useSummary()
+    const {accessCode} = useAccessCode()
 
     const {setStatusBarMessage} = useStatusBar()
 
     const handleCreateNewAnalysis = useCallback(() => {
+        if (!accessCode) {
+            window.alert(`You must set an access code before creating a new analysis.`)
+            return
+        }
         // Confirm that user wants to create a new analysis
         if (!window.confirm('Create a new analysis?')) return
         (async () => {
             const {result} = await serviceQuery('stan-playground', {
-                type: 'create_analysis'
+                type: 'create_analysis',
+                access_code: accessCode
             }, {
                 includeUserId: true
             })
@@ -30,7 +37,7 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
                 setStatusBarMessage(`New analysis has been created.`)
             }, 500)
         })()
-    }, [refreshSummary, setStatusBarMessage])
+    }, [refreshSummary, setStatusBarMessage, accessCode])
 
     const [takingLongerThanExpected, setTakingLongerThanExpected] = useState(false)
     useEffect(() => {

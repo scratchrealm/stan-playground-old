@@ -16,29 +16,44 @@ class RtcsharePlugin:
 class StanPlaygroundService:
     def handle_query(query: dict, *, dir: str, user_id: Union[str, None]=None) -> Tuple[dict, bytes]:
         print(f'Request from user: {user_id}')
-        # todo: authenticate user
         type0 = query['type']
+
+        access_code_required = True
+        if type0 == 'test':
+            access_code_required = False
+
+        access_code_verified = False        
+        if access_code_required:
+            access_code = query.get('access_code', None)
+            if not access_code:
+                return {'success': False, 'error': 'Access code is required'}, b''
+            if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
+                return {'success': False, 'error': 'Invalid access code'}, b''
+            access_code_verified = True
+        
         if type0 == 'test':
             return {'success': True}, b''
         elif type0 == 'set_analysis_text_file':
-            analysis_id = query['analysis_id']
-            check_valid_analysis_id(analysis_id)
-            name = query['name']
-            text = query['text']
-            if name in ['model.stan', 'data.json', 'description.md', 'options.yaml', 'data.py']:
-                path = f'$dir/analyses/{analysis_id}/{name}'
-                full_path = _get_full_path(path, dir=dir)
-                with open(full_path, 'w') as f:
-                    f.write(text)
-                create_summary(dir=_get_full_path('$dir', dir=dir))
-                return {'success': True}, b''
-            else:
-                raise Exception(f'Unexpected file name: {name}')
+            try:
+                analysis_id = query['analysis_id']
+                check_valid_analysis_id(analysis_id)
+                name = query['name']
+                text = query['text']
+                if name in ['model.stan', 'data.json', 'description.md', 'options.yaml', 'data.py']:
+                    path = f'$dir/analyses/{analysis_id}/{name}'
+                    full_path = _get_full_path(path, dir=dir)
+                    with open(full_path, 'w') as f:
+                        f.write(text)
+                    create_summary(dir=_get_full_path('$dir', dir=dir))
+                    return {'success': True}, b''
+                else:
+                    raise Exception(f'Unexpected file name: {name}')
+            except Exception as err:
+                return {'success': False, 'error': str(err)}, b''
         elif type0 == 'set_analysis_status':
             try:
                 analysis_id = query['analysis_id']
                 check_valid_analysis_id(analysis_id)
-                access_code = query.get('access_code', None)
                 status = query['status']
                 info = _get_analysis_info(analysis_id, dir=dir)
                 current_status = info.get('status', 'none')
@@ -53,12 +68,6 @@ class StanPlaygroundService:
                 elif status == 'queued':
                     if current_status != 'requested':
                         raise Exception(f'Unable to set status to "queued" because current status is "{current_status}"')
-                    if not access_code:
-                        raise Exception('Access code is required to set status to "queued"')
-                    
-                    # this is important because we don't want unauthorized queueing of analyses
-                    if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
-                        raise Exception('Invalid access code')
                     
                     info['status'] = 'queued'
                     info['error'] = None
@@ -132,26 +141,21 @@ class StanPlaygroundService:
         elif type0 == 'generate_analysis_data':
             analysis_id = query['analysis_id']
             check_valid_analysis_id(analysis_id)
-            access_code = query['access_code']
 
             # This is very important because we don't want unauthorized execution of Python code.
-            if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
-                return {'success': False, 'error': 'Invalid access code'}, b''
-            
-            try:
-                generate_analysis_data(analysis_id, dir=_get_full_path('$dir', dir=dir))
-            except Exception as e:
-                return {'success': False, 'error': str(e)}, b''
-            
+            # That's why we are double checking the access code here.
+            if access_code_verified:
+                try:
+                    generate_analysis_data(analysis_id, dir=_get_full_path('$dir', dir=dir))
+                except Exception as e:
+                    return {'success': False, 'error': str(e)}, b''
+            else:
+                return {'success': False, 'error': 'Unexpected problem with access code'}, b''
+                        
             return {'success': True}, b''
         elif type0 == 'compile_analysis_model':
             analysis_id = query['analysis_id']
             check_valid_analysis_id(analysis_id)
-            access_code = query['access_code']
-
-            # This is medium important
-            if not check_valid_access_code(access_code, dir=_get_full_path('$dir', dir=dir)):
-                return {'success': False, 'error': 'Invalid access code'}, b''
             
             try:
                 compile_analysis_model(analysis_id, dir=_get_full_path('$dir', dir=dir))

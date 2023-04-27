@@ -1,6 +1,7 @@
 import { getFileData, serviceQuery } from "@figurl/interface"
 import YAML from 'js-yaml'
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useAccessCode } from "../AccessCodeContext"
 import { useStatusBar } from "../StatusBar/StatusBarContext"
 
 export type AnalysisInfo = {
@@ -11,6 +12,7 @@ export type AnalysisInfo = {
 export const useAnalysisTextFile = (analysisId: string, name: string) => {
     const [internalText, setInternalText] = useState<string | undefined>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
+    const {accessCode} = useAccessCode()
     useEffect(() => {
         (async () => {
             setInternalText(undefined)
@@ -28,18 +30,23 @@ export const useAnalysisTextFile = (analysisId: string, name: string) => {
         setRefreshCode(c => (c + 1))
     }, [])
     const setText = useCallback((text: string) => {
+        if (!accessCode) {
+            window.alert(`You must set an access code to edit this file.`)
+            return
+        }
         (async () => {
             await serviceQuery('stan-playground', {
                 type: 'set_analysis_text_file',
                 analysis_id: analysisId,
                 name,
-                text
+                text,
+                access_code: accessCode
             }, {
                 includeUserId: true
             })
             setRefreshCode(c => (c + 1))
         })()
-    }, [analysisId, name])
+    }, [analysisId, name, accessCode])
     return {text: internalText, refresh, setText}
 }
 
@@ -50,6 +57,8 @@ const useAnalysisData = (analysisId: string) => {
     const {text: optionsYamlText, setText: setOptionsYamlText, refresh: refreshOptionsYamlText} = useAnalysisTextFile(analysisId, 'options.yaml')
     const {text: dataPyText, setText: setDataPyText, refresh: refreshDataPyText} = useAnalysisTextFile(analysisId, 'data.py')
     const {text: analysisInfoText, refresh: refreshAnalysisInfo} = useAnalysisTextFile(analysisId, 'analysis.yaml')
+
+    const {accessCode} = useAccessCode()
 
     const analysisInfo = useMemo(() => {
         if (!analysisInfoText) return undefined
@@ -65,14 +74,18 @@ const useAnalysisData = (analysisId: string) => {
 
     const {setStatusBarMessage} = useStatusBar()
 
-    const setStatus = useCallback((status: string, o: {accessCode?: string}={}) => {
+    const setStatus = useCallback((status: string) => {
         (async () => {
+            if ((!accessCode) && (status !== 'requested')) {
+                window.alert(`You must set an access code to perform this action.`)
+                return
+            }
             try {
                 const {result} = await serviceQuery('stan-playground', {
                     type: 'set_analysis_status',
                     analysis_id: analysisId,
                     status,
-                    access_code: o.accessCode
+                    access_code: accessCode
                 }, {
                     includeUserId: true
                 })

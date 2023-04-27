@@ -18,15 +18,13 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
     // important to do this here just once rather than separately in the various editors
     const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, dataPyText, setDataPyText, analysisInfo, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, refreshModelStanText, refreshDataJsonText, refreshDataPyText, refreshDescriptionMdText, refreshOptionsYamlText, setStatus, refreshAnalysisInfo} = useAnalysisData(analysisId)
 
-    const {accessCode} = useAccessCode()
-
     const handleRequestRun = useCallback(() => {
         setStatus('requested')
     }, [setStatus])
 
     const handleQueueRun = useCallback(() => {
-        setStatus('queued', {accessCode})
-    }, [setStatus, accessCode])
+        setStatus('queued')
+    }, [setStatus])
 
     const handleDeleteRun = useCallback(() => {
         // confirm that the user wants to delete the run

@@ -21,19 +21,24 @@ type Props = {
 const deleteAnalysisTooltip = `When you delete an analysis, it is flagged as deleted on the server and it will not show up on the list of analyses. This operation can be undone by the administrator.`
 const cloneAnalysisTooltip = `When you clone an analysis, a new analysis is created with the same model, scripts, settings, etc. However, the run will be empty.`
 
-const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInfo, onRefreshAnalysisInfo, onRequestRun, onQueueRun, onDeleteRun, width, height}) => {
+const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInfo, onRefreshAnalysisInfo, onRequestRun, onQueueRun, onDeleteRun}) => {
     const {setRoute} = useRoute()
     const {accessCode} = useAccessCode()
     const {setStatusBarMessage} = useStatusBar()
     const status = analysisInfo !== undefined ? analysisInfo?.status || 'none' : 'undefined'
     const mcmcMonitorBaseUrl = useMcmcMonitorBaseUrl()
     const handleClone = useCallback(() => {
+        if (!accessCode) {
+            alert('You must set an access code before you can clone an analysis.')
+            return
+        }
         // prompt the user if they are sure they want to clone this analysis
         if (!window.confirm('Are you sure you want to CLONE this analysis?')) return
         (async() => {
             const {result} = await serviceQuery('stan-playground', {
                 type: 'clone_analysis',
-                analysis_id: analysisId
+                analysis_id: analysisId,
+                access_code: accessCode
             }, {
                 includeUserId: true
             })
@@ -43,14 +48,19 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                 setStatusBarMessage(`Analysis has been cloned. You are now viewing the clone.`)
             }, 500)
         })()
-    }, [analysisId, setRoute, setStatusBarMessage])
+    }, [analysisId, setRoute, setStatusBarMessage, accessCode])
     const handleDelete = useCallback(() => {
+        if (!accessCode) {
+            alert('You must set an access code before you can delete an analysis.')
+            return
+        }
         // prompt the user if they are sure they want to delete this analysis
         if (!window.confirm('Are you sure you want to DELETE this analysis?')) return
         (async() => {
             const {result} = await serviceQuery('stan-playground', {
                 type: 'delete_analysis',
-                analysis_id: analysisId
+                analysis_id: analysisId,
+                access_code: accessCode
             }, {
                 includeUserId: true
             })
@@ -62,7 +72,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                 }, 500)
             }
         })()
-    }, [analysisId, setRoute, setStatusBarMessage])
+    }, [analysisId, setRoute, setStatusBarMessage, accessCode])
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 14, userSelect: 'none'}}>
             <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>

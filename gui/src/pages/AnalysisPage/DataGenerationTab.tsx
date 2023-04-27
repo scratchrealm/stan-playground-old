@@ -87,7 +87,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
                 text={dataPyText}
                 onSetText={setDataPyText}
                 onReload={refreshDataPyText}
-                readOnly={false}
+                readOnly={(accessCode ? false : true) || (analysisStatus !== 'none')}
                 toolbarItems={toolbarItems}
                 onModifiedChanged={setDataPyModified}
             />
