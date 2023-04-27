@@ -1,5 +1,5 @@
 import { serviceQuery } from "@figurl/interface";
-import { FunctionComponent, useCallback } from "react";
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
 import Hyperlink from "../components/Hyperlink";
 import { useStatusBar } from "../StatusBar/StatusBarContext";
 import AnalysesTable from "./AnalysesTable";
@@ -32,6 +32,16 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
         })()
     }, [refreshSummary, setStatusBarMessage])
 
+    const [takingLongerThanExpected, setTakingLongerThanExpected] = useState(false)
+    useEffect(() => {
+        const a = setTimeout(() => {
+            setTakingLongerThanExpected(true)
+        }, 2500)
+        return () => {
+            clearTimeout(a)
+        }
+    }, [])
+
     const padding = 20
 
     return (
@@ -45,7 +55,15 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
                 <a href="https://github.com/scratchrealm/stan-playground/blob/main/README.md" target="_blank" rel="noopener noreferrer">View documentation</a>
             </div>
             {
-                summary ? <AnalysesTable summary={summary} /> : <div>Loading...</div>
+                summary ? (
+                    <AnalysesTable summary={summary} />
+                ) : (
+                    !takingLongerThanExpected ? (
+                        <div>Loading...</div>
+                    ) : (
+                        <div>Loading is taking longer than expected. You may want to try refreshing the page.</div>
+                    )
+                )
             }
         </div>
     )
