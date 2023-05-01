@@ -65,6 +65,9 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                     setStatusBarMessage(`Analysis has been deleted.`)
                 }, 500)
             }
+            else {
+                alert(`Failed to delete analysis: ${result.error}`)
+            }
         })()
     }, [analysisId, setRoute, setStatusBarMessage, analysisInfo?.user_id, userId])
     return (

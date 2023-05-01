@@ -98,6 +98,10 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
         }
     }, [modelStanEditedText, editedModelStanTextOverrider])
 
+    const modelReadOnly = useMemo(() => {
+        return analysisInfo?.status !== 'none'
+    }, [analysisInfo])
+
     const toolbarItems: ToolbarItem[] = useMemo(() => {
         const ret: ToolbarItem[] = []
 
@@ -120,16 +124,18 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
         // }
 
         // auto format
-        if (modelStanEditedText !== undefined) {
-            ret.push({
-                label: "auto format",
-                onClick: handleAutoFormat,
-                color: 'darkblue'
-            })
+        if (!modelReadOnly) {
+            if (modelStanEditedText !== undefined) {
+                ret.push({
+                    label: "auto format",
+                    onClick: handleAutoFormat,
+                    color: 'darkblue'
+                })
+            }
         }
 
         return ret
-    }, [handleAutoFormat, modelStanEditedText])
+    }, [handleAutoFormat, modelStanEditedText, modelReadOnly])
 
     return (
         <Splitter
@@ -155,7 +161,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
                     onReload={refreshModelStanText}
                     onEditedTextChanged={setModelStanEditedText}
                     onEditedTextOverrider={handleEditedTextOverrider}
-                    readOnly={analysisInfo?.status !== 'none'}
+                    readOnly={modelReadOnly}
                     toolbarItems={toolbarItems}
                 />
                 {
@@ -202,7 +208,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
                     text={optionsYamlText}
                     onSetText={setOptionsYamlText}
                     onReload={refreshOptionsYamlText}
-                    readOnly={analysisInfo?.status !== 'none'}
+                    readOnly={modelReadOnly}
                 />
             </Splitter>
         </Splitter>
