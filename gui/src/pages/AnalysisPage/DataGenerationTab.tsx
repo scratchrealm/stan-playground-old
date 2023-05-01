@@ -4,7 +4,7 @@ import { accessCodeHasExpired, useAccessCode } from "../../AccessCodeContext"
 import Splitter from "../../components/Splitter"
 import { useStatusBar } from "../../StatusBar/StatusBarContext"
 import TextEditor, { ToolbarItem } from "../TextEditor"
-import { useAnalysisTextFile } from "../useAnalysisData"
+import { AnalysisInfo, useAnalysisTextFile } from "../useAnalysisData"
 import ConsoleOutputWindow from "./ConsoleOutputWindow"
 
 type Props = {
@@ -16,12 +16,13 @@ type Props = {
     analysisId: string
     onRefreshDataJson: () => void
     analysisStatus: string | undefined
+    analysisInfo: AnalysisInfo | undefined
 }
 
-const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText, setDataPyText, refreshDataPyText, analysisId, onRefreshDataJson, analysisStatus}) => {
+const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText, setDataPyText, refreshDataPyText, analysisId, onRefreshDataJson, analysisStatus, analysisInfo}) => {
     const {accessCode} = useAccessCode()
-    const {text: dataConsoleText, refresh: refreshDataConsoleText} = useAnalysisTextFile(analysisId, 'data.console.txt')
-    const [dataPyModified, setDataPyModified] = useState(false)
+    const {text: dataConsoleText, refresh: refreshDataConsoleText} = useAnalysisTextFile(analysisId, analysisInfo, 'data.console.txt')
+    const [dataPyEditedText, setDataPyEditedText] = useState<string | undefined>(undefined)
 
     const {setStatusBarMessage} = useStatusBar()
 
@@ -62,7 +63,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
         })()
     }, [accessCode, analysisId, refreshDataConsoleText, onRefreshDataJson, setStatusBarMessage])
     const toolbarItems: ToolbarItem[] = useMemo(() => {
-        if (dataPyModified) return []
+        if (dataPyEditedText !== dataPyText) return []
         if (analysisStatus !== 'none') return []
         return [
             {
@@ -71,7 +72,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
                 color: 'darkgreen'
             }
         ]
-    }, [handleGenerate, dataPyModified, analysisStatus])
+    }, [handleGenerate, dataPyEditedText, dataPyText, analysisStatus])
     return (
         <Splitter
             width={width}
@@ -89,7 +90,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
                 onReload={refreshDataPyText}
                 readOnly={(accessCode ? false : true) || (analysisStatus !== 'none')}
                 toolbarItems={toolbarItems}
-                onModifiedChanged={setDataPyModified}
+                onEditedTextChanged={setDataPyEditedText}
             />
             <ConsoleOutputWindow
                 text={dataConsoleText || ''}

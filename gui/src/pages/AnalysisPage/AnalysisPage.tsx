@@ -1,5 +1,4 @@
 import { FunctionComponent, useCallback, useEffect } from "react";
-import { useAccessCode } from "../../AccessCodeContext";
 import AnalysisControlPanel from "../AnalysisControlPanel";
 import TabWidget from "../TabWidget/TabWidget";
 import useAnalysisData from "../useAnalysisData";
@@ -93,6 +92,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     setDataPyText={setDataPyText}
                     refreshDataPyText={refreshDataPyText}
                     analysisId={analysisId}
+                    analysisInfo={analysisInfo}
                     onRefreshDataJson={refreshDataJsonText}
                     analysisStatus={analysisInfo?.status}
                 />

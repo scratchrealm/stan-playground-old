@@ -15,7 +15,8 @@ type Props = {
     readOnly?: boolean
     wordWrap?: boolean
     onReload?: () => void
-    onModifiedChanged?: (modified: boolean) => void
+    onEditedTextChanged?: (text: string) => void
+    onEditedTextOverrider?: (cb: (text: string) => void) => void
     toolbarItems?: ToolbarItem[]
     label: string
     theme?: 'vs' | 'vs-dark' | 'hc-black' | 'hc-light'
@@ -29,7 +30,7 @@ export type ToolbarItem = {
     color?: string
 }
 
-const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, wordWrap, onReload, onModifiedChanged, toolbarItems, language, theme, label, width, height}) => {
+const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, wordWrap, onReload, onEditedTextChanged, onEditedTextOverrider, toolbarItems, language, theme, label, width, height}) => {
     const [internalText, setInternalText] = useState('')
     useEffect(() => {
         if (text !== undefined) {
@@ -44,10 +45,10 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
     }, [internalText, onSetText])
 
     useEffect(() => {
-        if (onModifiedChanged) {
-            onModifiedChanged(text !== internalText)
+        if ((onEditedTextChanged) && (internalText !== undefined)) {
+            onEditedTextChanged(internalText)
         }
-    }, [text, internalText, onModifiedChanged])
+    }, [internalText, onEditedTextChanged])
 
     //////////////////////////////////////////////////
     // Seems that it is important to set the initial value of the editor
@@ -63,9 +64,31 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
         editor.setValue(text || defaultText || '')
     }, [text, editor, defaultText, theme])
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+        // monaco.languages.register({id: 'stan'})
+        // const stanLang: monaco.languages.IMonarchLanguage = {
+        //     defaultToken: 'invalid',
+        //     tokenizer: {
+        //       root: [
+        //         [/(\b)(data|parameters|model)(\b)/, { token: 'keyword' }],
+        //         [/\/\/.*$/, { token: 'comment' }],
+        //       ],
+        //     },
+        // }
+        // monaco.languages.setMonarchTokensProvider('stan', stanLang);
+                    
         setEditor(editor)
     }, [])
     /////////////////////////////////////////////////
+
+    const editedTextOverrider = useCallback((text: string) => {
+        editor?.setValue(text)
+    }, [editor])
+
+    useEffect(() => {
+        if (onEditedTextOverrider) {
+            onEditedTextOverrider(editedTextOverrider)
+        }
+    }, [editedTextOverrider, onEditedTextOverrider])
 
 
     const toolbarHeight = 25
@@ -108,12 +131,15 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
 const ToolbarItemComponent: FunctionComponent<{item: ToolbarItem}> = ({item}) => {
     const {onClick, color, label} = item
     if (!onClick) {
-        return <span style={{color: color || 'gray'}}>{label}</span>
+        return <span style={{color: color || 'gray'}}>{label}&nbsp;&nbsp;&nbsp;</span>
     }
     return (
-        <Hyperlink onClick={onClick} color={color || 'gray'}>
-            {label}
-        </Hyperlink>
+        <span>
+            <Hyperlink onClick={onClick} color={color || 'gray'}>
+                {label}
+            </Hyperlink>
+            &nbsp;&nbsp;&nbsp;
+        </span>
     )
 }
 

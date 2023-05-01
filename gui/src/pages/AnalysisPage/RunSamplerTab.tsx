@@ -16,7 +16,7 @@ type Props = {
 }
 
 const RunSamplerTab: FunctionComponent<Props> = ({width, height, analysisId, analysisInfo, onRefreshStatus, onRequestRun, onQueueRun, onDeleteRun}) => {
-    const {text: runConsoleText, refresh: refreshRunConsoleText} = useAnalysisTextFile(analysisId, 'run.console.txt')
+    const {text: runConsoleText, refresh: refreshRunConsoleText} = useAnalysisTextFile(analysisId, analysisInfo, 'run.console.txt')
 
     const infoPanelWidth = Math.min(500, width / 2)
 

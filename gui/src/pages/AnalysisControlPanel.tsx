@@ -1,4 +1,4 @@
-import { getFileData, serviceQuery } from "@figurl/interface"
+import { getFileData, serviceQuery, useSignedIn } from "@figurl/interface"
 import { FunctionComponent, useCallback, useEffect, useState } from "react"
 import { useAccessCode } from "../AccessCodeContext"
 import Hyperlink from "../components/Hyperlink"
@@ -27,17 +27,12 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
     const status = analysisInfo !== undefined ? analysisInfo?.status || 'none' : 'undefined'
     const mcmcMonitorBaseUrl = useMcmcMonitorBaseUrl()
     const handleClone = useCallback(() => {
-        if (!accessCode) {
-            alert('You must set an access code before you can clone an analysis.')
-            return
-        }
         // prompt the user if they are sure they want to clone this analysis
         if (!window.confirm('Are you sure you want to CLONE this analysis?')) return
         (async() => {
             const {result} = await serviceQuery('stan-playground', {
                 type: 'clone_analysis',
-                analysis_id: analysisId,
-                access_code: accessCode
+                analysis_id: analysisId
             }, {
                 includeUserId: true
             })
@@ -47,10 +42,11 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                 setStatusBarMessage(`Analysis has been cloned. You are now viewing the clone.`)
             }, 500)
         })()
-    }, [analysisId, setRoute, setStatusBarMessage, accessCode])
+    }, [analysisId, setRoute, setStatusBarMessage])
+    const {userId} = useSignedIn()
     const handleDelete = useCallback(() => {
-        if (!accessCode) {
-            alert('You must set an access code before you can delete an analysis.')
+        if ((analysisInfo?.user_id) && (analysisInfo.user_id !== userId?.toString())) {
+            alert('You do not have permission to delete this analysis.')
             return
         }
         // prompt the user if they are sure they want to delete this analysis
@@ -58,8 +54,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
         (async() => {
             const {result} = await serviceQuery('stan-playground', {
                 type: 'delete_analysis',
-                analysis_id: analysisId,
-                access_code: accessCode
+                analysis_id: analysisId
             }, {
                 includeUserId: true
             })
@@ -71,7 +66,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                 }, 500)
             }
         })()
-    }, [analysisId, setRoute, setStatusBarMessage, accessCode])
+    }, [analysisId, setRoute, setStatusBarMessage, analysisInfo?.user_id, userId])
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 14, userSelect: 'none'}}>
             <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>

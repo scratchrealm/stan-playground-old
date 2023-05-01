@@ -1,18 +1,17 @@
-import { getFileData, serviceQuery } from "@figurl/interface"
+import { getFileData, serviceQuery, useSignedIn } from "@figurl/interface"
 import YAML from 'js-yaml'
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useAccessCode } from "../AccessCodeContext"
 import { useStatusBar } from "../StatusBar/StatusBarContext"
 
 export type AnalysisInfo = {
     status: 'none' | 'requested' | 'queued' | 'running' | 'completed' | 'failed'
     error?: string
+    user_id?: string
 }
 
-export const useAnalysisTextFile = (analysisId: string, name: string) => {
+export const useAnalysisTextFile = (analysisId: string, analysisInfo: AnalysisInfo | undefined, name: string) => {
     const [internalText, setInternalText] = useState<string | undefined>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
-    const {accessCode} = useAccessCode()
     useEffect(() => {
         (async () => {
             setInternalText(undefined)
@@ -29,9 +28,10 @@ export const useAnalysisTextFile = (analysisId: string, name: string) => {
     const refresh = useCallback(() => {
         setRefreshCode(c => (c + 1))
     }, [])
+    const {userId} = useSignedIn()
     const setText = useCallback((text: string) => {
-        if (!accessCode) {
-            window.alert(`You must set an access code to edit this file.`)
+        if ((analysisInfo?.user_id) && (analysisInfo.user_id !== userId?.toString())) {
+            window.alert(`You cannot edit this file because it is owned by by ${analysisInfo.user_id}.`)
             return
         }
         (async () => {
@@ -39,27 +39,18 @@ export const useAnalysisTextFile = (analysisId: string, name: string) => {
                 type: 'set_analysis_text_file',
                 analysis_id: analysisId,
                 name,
-                text,
-                access_code: accessCode
+                text
             }, {
                 includeUserId: true
             })
             setRefreshCode(c => (c + 1))
         })()
-    }, [analysisId, name, accessCode])
+    }, [analysisId, name, analysisInfo, userId])
     return {text: internalText, refresh, setText}
 }
 
 const useAnalysisData = (analysisId: string) => {
-    const {text: dataJsonText, setText: setDataJsonText, refresh: refreshDataJsonText} = useAnalysisTextFile(analysisId, 'data.json')
-    const {text: modelStanText, setText: setModelStanText, refresh: refreshModelStanText} = useAnalysisTextFile(analysisId, 'model.stan')
-    const {text: descriptionMdText, setText: setDescriptionMdText, refresh: refreshDescriptionMdText} = useAnalysisTextFile(analysisId, 'description.md')
-    const {text: optionsYamlText, setText: setOptionsYamlText, refresh: refreshOptionsYamlText} = useAnalysisTextFile(analysisId, 'options.yaml')
-    const {text: dataPyText, setText: setDataPyText, refresh: refreshDataPyText} = useAnalysisTextFile(analysisId, 'data.py')
-    const {text: analysisInfoText, refresh: refreshAnalysisInfo} = useAnalysisTextFile(analysisId, 'analysis.yaml')
-
-    const {accessCode} = useAccessCode()
-
+    const {text: analysisInfoText, refresh: refreshAnalysisInfo} = useAnalysisTextFile(analysisId, undefined, 'analysis.yaml')
     const analysisInfo = useMemo(() => {
         if (!analysisInfoText) return undefined
         try {
@@ -72,20 +63,27 @@ const useAnalysisData = (analysisId: string) => {
         }
     }, [analysisInfoText])
 
+    const {text: dataJsonText, setText: setDataJsonText, refresh: refreshDataJsonText} = useAnalysisTextFile(analysisId, analysisInfo, 'data.json')
+    const {text: modelStanText, setText: setModelStanText, refresh: refreshModelStanText} = useAnalysisTextFile(analysisId, analysisInfo, 'model.stan')
+    const {text: descriptionMdText, setText: setDescriptionMdText, refresh: refreshDescriptionMdText} = useAnalysisTextFile(analysisId, analysisInfo, 'description.md')
+    const {text: optionsYamlText, setText: setOptionsYamlText, refresh: refreshOptionsYamlText} = useAnalysisTextFile(analysisId, analysisInfo, 'options.yaml')
+    const {text: dataPyText, setText: setDataPyText, refresh: refreshDataPyText} = useAnalysisTextFile(analysisId, analysisInfo, 'data.py')
+
     const {setStatusBarMessage} = useStatusBar()
+
+    const {userId} = useSignedIn()
 
     const setStatus = useCallback((status: string) => {
         (async () => {
-            if ((!accessCode) && (status !== 'requested')) {
-                window.alert(`You must set an access code to perform this action.`)
+            if ((analysisInfo?.user_id) && (analysisInfo.user_id !== userId?.toString())) {
+                window.alert(`You cannot perform this action because this analysis is owned by by ${analysisInfo.user_id}.`)
                 return
             }
             try {
                 const {result} = await serviceQuery('stan-playground', {
                     type: 'set_analysis_status',
                     analysis_id: analysisId,
-                    status,
-                    access_code: accessCode
+                    status
                 }, {
                     includeUserId: true
                 })
@@ -102,7 +100,7 @@ const useAnalysisData = (analysisId: string) => {
             }
             
         })()
-    }, [analysisId, refreshAnalysisInfo, accessCode, setStatusBarMessage])
+    }, [analysisId, refreshAnalysisInfo, setStatusBarMessage, userId, analysisInfo?.user_id])
     
     return {
         modelStanText,

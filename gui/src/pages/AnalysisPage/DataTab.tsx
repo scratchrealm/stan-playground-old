@@ -1,5 +1,4 @@
 import { FunctionComponent } from "react"
-import { useAccessCode } from "../../AccessCodeContext"
 import TextEditor from "../TextEditor"
 import { AnalysisInfo } from "../useAnalysisData"
 
@@ -14,7 +13,6 @@ type Props = {
 }
 
 const DataTab: FunctionComponent<Props> = ({width, height, dataJsonText, setDataJsonText, refreshDataJsonText, analysisInfo}) => {
-    const {accessCode} = useAccessCode()
     return (
         <TextEditor
             width={width}
@@ -24,7 +22,7 @@ const DataTab: FunctionComponent<Props> = ({width, height, dataJsonText, setData
             text={dataJsonText}
             onSetText={setDataJsonText}
             onReload={refreshDataJsonText}
-            readOnly={(accessCode ? false : true) || (analysisInfo?.status !== 'none')}
+            readOnly={analysisInfo?.status !== 'none'}
             wordWrap={true}
         />
     )
