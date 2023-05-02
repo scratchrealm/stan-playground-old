@@ -82,9 +82,6 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
                 &nbsp;|&nbsp;
                 <a href="https://github.com/scratchrealm/stan-playground/blob/main/README.md" target="_blank" rel="noopener noreferrer">View documentation</a>
             </div>
-            <h3>Your recent analyses</h3>
-            <AnalysesTable summary={summaryFromLocalStorage} />
-
             <h3>Public analyses</h3>
             {
                 summary ? (
@@ -97,6 +94,8 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
                     )
                 )
             }
+            <h3>Your recent analyses</h3>
+            <AnalysesTable summary={summaryFromLocalStorage} />
         </div>
     )
 }
