@@ -3,6 +3,7 @@ import { FunctionComponent, useCallback, useMemo, useState } from "react"
 import { accessCodeHasExpired, useAccessCode } from "../../AccessCodeContext"
 import Splitter from "../../components/Splitter"
 import { useStatusBar } from "../../StatusBar/StatusBarContext"
+import { getLocalStorageAnalysisEditToken } from "../localStorageAnalyses"
 import TextEditor, { ToolbarItem } from "../TextEditor"
 import { AnalysisInfo, useAnalysisTextFile } from "../useAnalysisData"
 import ConsoleOutputWindow from "./ConsoleOutputWindow"
@@ -10,6 +11,7 @@ import ConsoleOutputWindow from "./ConsoleOutputWindow"
 type Props = {
     width: number
     height: number
+    canEdit: boolean
     dataPyText: string | undefined
     setDataPyText: (text: string) => void
     refreshDataPyText: () => void
@@ -19,7 +21,7 @@ type Props = {
     analysisInfo: AnalysisInfo | undefined
 }
 
-const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText, setDataPyText, refreshDataPyText, analysisId, onRefreshDataJson, analysisStatus, analysisInfo}) => {
+const DataGenerationTab: FunctionComponent<Props> = ({width, height, canEdit, dataPyText, setDataPyText, refreshDataPyText, analysisId, onRefreshDataJson, analysisStatus, analysisInfo}) => {
     const {accessCode} = useAccessCode()
     const {text: dataConsoleText, refresh: refreshDataConsoleText} = useAnalysisTextFile(analysisId, analysisInfo, 'data.console.txt')
     const [dataPyEditedText, setDataPyEditedText] = useState<string | undefined>(undefined)
@@ -41,7 +43,8 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
                 const {result} = await serviceQuery('stan-playground', {
                     type: 'generate_analysis_data',
                     analysis_id: analysisId,
-                    access_code: accessCode
+                    access_code: accessCode,
+                    edit_token: getLocalStorageAnalysisEditToken(analysisId)
                 })
                 if (!result.success) {
                     setStatusBarMessage('Data generation failed')
@@ -65,6 +68,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
     const toolbarItems: ToolbarItem[] = useMemo(() => {
         if (dataPyEditedText !== dataPyText) return []
         if (analysisStatus !== 'none') return []
+        if (!canEdit) return []
         return [
             {
                 label: "generate",
@@ -72,7 +76,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
                 color: 'darkgreen'
             }
         ]
-    }, [handleGenerate, dataPyEditedText, dataPyText, analysisStatus])
+    }, [handleGenerate, dataPyEditedText, dataPyText, analysisStatus, canEdit])
     return (
         <Splitter
             width={width}
@@ -88,7 +92,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, dataPyText,
                 text={dataPyText}
                 onSetText={setDataPyText}
                 onReload={refreshDataPyText}
-                readOnly={(accessCode ? false : true) || (analysisStatus !== 'none')}
+                readOnly={(!canEdit) || (accessCode ? false : true) || (analysisStatus !== 'none')}
                 toolbarItems={toolbarItems}
                 onEditedTextChanged={setDataPyEditedText}
             />

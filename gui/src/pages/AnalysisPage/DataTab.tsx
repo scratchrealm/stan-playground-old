@@ -6,13 +6,14 @@ import { AnalysisInfo } from "../useAnalysisData"
 type Props = {
     width: number
     height: number
+    canEdit: boolean
     dataJsonText: string | undefined
     setDataJsonText: (text: string) => void
     refreshDataJsonText: () => void
     analysisInfo: AnalysisInfo | undefined
 }
 
-const DataTab: FunctionComponent<Props> = ({width, height, dataJsonText, setDataJsonText, refreshDataJsonText, analysisInfo}) => {
+const DataTab: FunctionComponent<Props> = ({width, height, canEdit, dataJsonText, setDataJsonText, refreshDataJsonText, analysisInfo}) => {
     return (
         <TextEditor
             width={width}
@@ -22,7 +23,7 @@ const DataTab: FunctionComponent<Props> = ({width, height, dataJsonText, setData
             text={dataJsonText}
             onSetText={setDataJsonText}
             onReload={refreshDataJsonText}
-            readOnly={analysisInfo?.status !== 'none'}
+            readOnly={(!canEdit) || (analysisInfo?.status !== 'none')}
             wordWrap={true}
         />
     )

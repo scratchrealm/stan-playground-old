@@ -2,11 +2,19 @@ import { getFileData, serviceQuery, useSignedIn } from "@figurl/interface"
 import YAML from 'js-yaml'
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useStatusBar } from "../StatusBar/StatusBarContext"
+import { getLocalStorageAnalysisEditToken } from "./localStorageAnalyses"
 
 export type AnalysisInfo = {
-    status: 'none' | 'requested' | 'queued' | 'running' | 'completed' | 'failed'
+    status: 'none' | 'queued' | 'running' | 'completed' | 'failed'
     error?: string
-    user_id?: string
+    owner_id?: string
+    timestamp_created?: number
+    timestamp_modified?: number
+    timestamp_queued?: number
+    timestamp_started?: number
+    timestamp_completed?: number
+    timestamp_failed?: number
+    listed?: boolean
 }
 
 export const useAnalysisTextFile = (analysisId: string, analysisInfo: AnalysisInfo | undefined, name: string) => {
@@ -30,8 +38,8 @@ export const useAnalysisTextFile = (analysisId: string, analysisInfo: AnalysisIn
     }, [])
     const {userId} = useSignedIn()
     const setText = useCallback((text: string) => {
-        if ((analysisInfo?.user_id) && (analysisInfo.user_id !== userId?.toString())) {
-            window.alert(`You cannot edit this file because it is owned by by ${analysisInfo.user_id}.`)
+        if ((analysisInfo?.owner_id) && (analysisInfo.owner_id !== userId?.toString())) {
+            window.alert(`You cannot edit this file because it is owned by by ${analysisInfo.owner_id}.`)
             return
         }
         (async () => {
@@ -39,7 +47,8 @@ export const useAnalysisTextFile = (analysisId: string, analysisInfo: AnalysisIn
                 type: 'set_analysis_text_file',
                 analysis_id: analysisId,
                 name,
-                text
+                text,
+                edit_token: getLocalStorageAnalysisEditToken(analysisId)
             }, {
                 includeUserId: true
             })
@@ -75,15 +84,16 @@ const useAnalysisData = (analysisId: string) => {
 
     const setStatus = useCallback((status: string) => {
         (async () => {
-            if ((analysisInfo?.user_id) && (analysisInfo.user_id !== userId?.toString())) {
-                window.alert(`You cannot perform this action because this analysis is owned by by ${analysisInfo.user_id}.`)
+            if ((analysisInfo?.owner_id) && (analysisInfo.owner_id !== userId?.toString())) {
+                window.alert(`You cannot perform this action because this analysis is owned by by ${analysisInfo.owner_id}.`)
                 return
             }
             try {
                 const {result} = await serviceQuery('stan-playground', {
                     type: 'set_analysis_status',
                     analysis_id: analysisId,
-                    status
+                    status,
+                    edit_token: getLocalStorageAnalysisEditToken(analysisId)
                 }, {
                     includeUserId: true
                 })
@@ -100,7 +110,7 @@ const useAnalysisData = (analysisId: string) => {
             }
             
         })()
-    }, [analysisId, refreshAnalysisInfo, setStatusBarMessage, userId, analysisInfo?.user_id])
+    }, [analysisId, refreshAnalysisInfo, setStatusBarMessage, userId, analysisInfo?.owner_id])
     
     return {
         modelStanText,

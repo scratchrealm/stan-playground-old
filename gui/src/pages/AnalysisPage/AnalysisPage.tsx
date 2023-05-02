@@ -1,5 +1,7 @@
-import { FunctionComponent, useCallback, useEffect } from "react";
+import { useSignedIn } from "@figurl/interface";
+import { FunctionComponent, useCallback, useEffect, useMemo } from "react";
 import AnalysisControlPanel from "../AnalysisControlPanel";
+import { getLocalStorageAnalysisEditToken, setLocalStorageAnalysisAnalysisInfo, setLocalStorageAnalysisDescriptionMdText } from "../localStorageAnalyses";
 import TabWidget from "../TabWidget/TabWidget";
 import useAnalysisData from "../useAnalysisData";
 import DataGenerationTab from "./DataGenerationTab";
@@ -17,9 +19,14 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
     // important to do this here just once rather than separately in the various editors
     const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, dataPyText, setDataPyText, analysisInfo, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, refreshModelStanText, refreshDataJsonText, refreshDataPyText, refreshDescriptionMdText, refreshOptionsYamlText, setStatus, refreshAnalysisInfo} = useAnalysisData(analysisId)
 
-    const handleRequestRun = useCallback(() => {
-        setStatus('requested')
-    }, [setStatus])
+    useEffect(() => {
+        if (analysisInfo) {
+            setLocalStorageAnalysisAnalysisInfo(analysisId, analysisInfo)
+        }
+        if (descriptionMdText) {
+            setLocalStorageAnalysisDescriptionMdText(analysisId, descriptionMdText)
+        }
+    }, [analysisId, analysisInfo, descriptionMdText])
 
     const handleQueueRun = useCallback(() => {
         setStatus('queued')
@@ -45,6 +52,20 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
 
     const controlPanelWidth = Math.max(200, Math.min(300, width / 6))
 
+    const {userId} = useSignedIn()
+
+    const canEdit = useMemo(() => {
+        const editToken = getLocalStorageAnalysisEditToken(analysisId)
+        if (editToken) return true
+        if (analysisInfo?.owner_id) {
+            if (userId?.toString() === analysisInfo.owner_id) return true
+            else return false
+        }
+        else {
+            return true
+        }
+    }, [analysisId, analysisInfo, userId])
+
     return (
         <div>
             <div style={{position: 'absolute', width: controlPanelWidth, height}}>
@@ -52,9 +73,9 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     width={controlPanelWidth}
                     height={height}
                     analysisId={analysisId}
+                    canEdit={canEdit}
                     analysisInfo={analysisInfo}
                     onRefreshAnalysisInfo={refreshAnalysisInfo}
-                    onRequestRun={handleRequestRun}
                     onQueueRun={handleQueueRun}
                     onDeleteRun={handleDeleteRun}
                 />
@@ -74,6 +95,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     width={0}
                     height={0}
                     analysisId={analysisId}
+                    canEdit={canEdit}
                     modelStanText={modelStanText}
                     setModelStanText={setModelStanText}
                     refreshModelStanText={refreshModelStanText}
@@ -88,6 +110,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                 <DataGenerationTab
                     width={0}
                     height={0}
+                    canEdit={canEdit}
                     dataPyText={dataPyText}
                     setDataPyText={setDataPyText}
                     refreshDataPyText={refreshDataPyText}
@@ -99,6 +122,7 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                 <DataTab
                     width={0}
                     height={0}
+                    canEdit={canEdit}
                     dataJsonText={dataJsonText}
                     setDataJsonText={setDataJsonText}
                     refreshDataJsonText={refreshDataJsonText}
@@ -108,9 +132,9 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     width={0}
                     height={0}
                     analysisId={analysisId}
+                    canEdit={canEdit}
                     analysisInfo={analysisInfo}
                     onRefreshStatus={refreshAnalysisInfo}
-                    onRequestRun={handleRequestRun}
                     onQueueRun={handleQueueRun}
                     onDeleteRun={handleDeleteRun}
                 />

@@ -56,20 +56,15 @@ To create a new analysis, click the `Create new analysis` link above the main an
 
 To edit an analysis, click on the analysis ID in the main analyses table. This will open the editor for the analysis. You will then be able to edit the model, data, description, and options for the analysis. Typically you would prepare the model.stan and data.json files separately and paste them in to the viewer.
 
-Note that the model, data, and options can only be edited if the status is "none", meaning that the analysis has not yet been run, queued, or requested for running. However, you can edit the description at any time.
+Note that the model, data, and options can only be edited if the status is "none", meaning that the analysis has not yet been run, or queued for running. However, you can edit the description at any time.
 
 **Running an analysis**
 
-For security reasons, analysis runs cannot be queued directly from the web interface. Instead, you can tag an analysis as "requested" using the "Request run" button in the web interface. Then, the administrator can choose to queue that analysis for running using the command-line interface:
-
-```bash
-# replace 0001 by the analysis ID
-stan-playground queue 0001
-```
+You can queue an analysis to be run by clicking the queue link in the user interface.
 
 **Canceling a run**
 
-You can cancel a run for an analysis that has a status of `requested` or `queued` using the appropriate button on the web interface.
+You can cancel a run for an analysis that has a status of `queued` using the appropriate button on the web interface.
 
 **Deleting a run**
 
@@ -119,7 +114,7 @@ cd stan-playground-data
 stan-playground start
 
 # This is the service that will monitor the analyses directory for changes
-# and automatically run the requested analyses.
+# and automatically run the queued analyses.
 ```
 
 ### Rtcshare

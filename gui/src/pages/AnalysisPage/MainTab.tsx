@@ -8,6 +8,7 @@ type Props = {
     width: number
     height: number
     analysisId: string
+    canEdit: boolean
     modelStanText: string | undefined
     setModelStanText: (text: string) => void
     refreshModelStanText: () => void
@@ -20,7 +21,7 @@ type Props = {
     analysisInfo: AnalysisInfo | undefined
 }
 
-const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStanText, setModelStanText, refreshModelStanText, descriptionMdText, setDescriptionMdText, refreshDescriptionMdText, optionsYamlText, setOptionsYamlText, refreshOptionsYamlText, analysisInfo}) => {
+const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanText, setModelStanText, refreshModelStanText, descriptionMdText, setDescriptionMdText, refreshDescriptionMdText, optionsYamlText, setOptionsYamlText, refreshOptionsYamlText, analysisInfo}) => {
     // const {text: compileConsoleText, refresh: refreshCompileConsoleText} = useAnalysisTextFile(analysisId, 'compile.console.txt')
     const [modelStanEditedText, setModelStanEditedText] = useState<string | undefined>(undefined)
 
@@ -99,8 +100,8 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
     }, [modelStanEditedText, editedModelStanTextOverrider])
 
     const modelReadOnly = useMemo(() => {
-        return analysisInfo?.status !== 'none'
-    }, [analysisInfo])
+        return (!canEdit) || (analysisInfo?.status !== 'none')
+    }, [analysisInfo, canEdit])
 
     const toolbarItems: ToolbarItem[] = useMemo(() => {
         const ret: ToolbarItem[] = []
@@ -198,7 +199,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, analysisId, modelStan
                     onSetText={setDescriptionMdText}
                     onReload={refreshDescriptionMdText}
                     wordWrap={true}
-                    readOnly={false}
+                    readOnly={!canEdit}
                 />
                 <TextEditor
                     width={0}

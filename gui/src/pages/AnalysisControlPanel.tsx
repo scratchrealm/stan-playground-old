@@ -1,28 +1,27 @@
-import { getFileData, serviceQuery, useSignedIn } from "@figurl/interface"
+import { getFileData, serviceQuery } from "@figurl/interface"
 import { FunctionComponent, useCallback, useEffect, useState } from "react"
-import { useAccessCode } from "../AccessCodeContext"
 import Hyperlink from "../components/Hyperlink"
 import { useStatusBar } from "../StatusBar/StatusBarContext"
 import useRoute from "../useRoute"
+import { addLocalStorageAnalysis, deleteLocalStorageAnalysis, getLocalStorageAnalysisEditToken } from "./localStorageAnalyses"
 import { AnalysisInfo } from "./useAnalysisData"
 
 type Props = {
     analysisId: string
     analysisInfo: AnalysisInfo | undefined
+    canEdit: boolean
     onRefreshAnalysisInfo: () => void
-    onRequestRun: () => void
     onQueueRun: () => void
     onDeleteRun: () => void
     width: number
     height: number
 }
 
-const deleteAnalysisTooltip = `When you delete an analysis, it is flagged as deleted on the server and it will not show up on the list of analyses. This operation can be undone by the administrator.`
+const deleteAnalysisTooltip = `When you delete an analysis, it is flagged as deleted on the server and it will not show up on the list of analyses. This operation can be undone.`
 const cloneAnalysisTooltip = `When you clone an analysis, a new analysis is created with the same model, scripts, settings, etc. However, the run will be empty.`
 
-const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInfo, onRefreshAnalysisInfo, onRequestRun, onQueueRun, onDeleteRun}) => {
+const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, analysisInfo, onRefreshAnalysisInfo, onQueueRun, onDeleteRun}) => {
     const {setRoute} = useRoute()
-    const {accessCode} = useAccessCode()
     const {setStatusBarMessage} = useStatusBar()
     const status = analysisInfo !== undefined ? analysisInfo?.status || 'none' : 'undefined'
     const mcmcMonitorBaseUrl = useMcmcMonitorBaseUrl()
@@ -37,28 +36,26 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                 includeUserId: true
             })
             setRoute({page: 'analysis', analysisId: result.newAnalysisId})
+            addLocalStorageAnalysis({analysisId: result.newAnalysisId, editToken: result.editToken})
             setTimeout(() => {
                 // provide a popup box that says that the analysis has been clone and you are not viewing the clone
                 setStatusBarMessage(`Analysis has been cloned. You are now viewing the clone.`)
             }, 500)
         })()
     }, [analysisId, setRoute, setStatusBarMessage])
-    const {userId} = useSignedIn()
     const handleDelete = useCallback(() => {
-        if ((analysisInfo?.user_id) && (analysisInfo.user_id !== userId?.toString())) {
-            alert('You do not have permission to delete this analysis.')
-            return
-        }
         // prompt the user if they are sure they want to delete this analysis
         if (!window.confirm('Are you sure you want to DELETE this analysis?')) return
         (async() => {
             const {result} = await serviceQuery('stan-playground', {
                 type: 'delete_analysis',
-                analysis_id: analysisId
+                analysis_id: analysisId,
+                edit_token: getLocalStorageAnalysisEditToken(analysisId)
             }, {
                 includeUserId: true
             })
             if (result.success) {
+                deleteLocalStorageAnalysis(analysisId)
                 setRoute({page: 'home'})
                 setTimeout(() => {
                     // provide a popup box that says that the analysis has been deleted
@@ -69,7 +66,54 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                 alert(`Failed to delete analysis: ${result.error}`)
             }
         })()
-    }, [analysisId, setRoute, setStatusBarMessage, analysisInfo?.user_id, userId])
+    }, [analysisId, setRoute, setStatusBarMessage])
+
+    const handleListAnalysis = useCallback(() => {
+        (async() => {
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'set_analysis_listed',
+                analysis_id: analysisId,
+                listed: true,
+                edit_token: getLocalStorageAnalysisEditToken(analysisId)
+            }, {
+                includeUserId: true
+            })
+            if (result.success) {
+                setTimeout(() => {
+                    // provide a popup box that says that the analysis has been deleted
+                    setStatusBarMessage(`Analysis has been listed.`)
+                }, 500)
+                onRefreshAnalysisInfo()
+            }
+            else {
+                alert(`Failed to list analysis: ${result.error}`)
+            }
+        })()
+    }, [analysisId, setStatusBarMessage, onRefreshAnalysisInfo])
+
+    const handleUnlistAnalysis = useCallback(() => {
+        (async() => {
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'set_analysis_listed',
+                analysis_id: analysisId,
+                listed: false,
+                edit_token: getLocalStorageAnalysisEditToken(analysisId)
+            }, {
+                includeUserId: true
+            })
+            if (result.success) {
+                setTimeout(() => {
+                    // provide a popup box that says that the analysis has been deleted
+                    setStatusBarMessage(`Analysis has been listed.`)
+                }, 500)
+                onRefreshAnalysisInfo()
+            }
+            else {
+                alert(`Failed to list analysis: ${result.error}`)
+            }
+        })()
+    }, [analysisId, setStatusBarMessage, onRefreshAnalysisInfo])
+
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 14, userSelect: 'none'}}>
             <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
@@ -82,28 +126,14 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                     <p>
                         This analysis has not been run.
                     </p>
-                    <p><Hyperlink onClick={onRequestRun}>Request run</Hyperlink></p>
-                </span>
-            )}</div>
-            <div>{status === 'requested' && (
-                <span>
-                    <p>
-                        This analysis has been requested to run. It is pending approval.
-                    </p>
-                    {
-                        accessCode && (
-                            <p><Hyperlink onClick={onQueueRun}>Queue run</Hyperlink></p>
-                        )
-                    }
-                    <div>
-                        <p><Hyperlink onClick={onDeleteRun}>Cancel run</Hyperlink></p>
-                    </div>
+                    <p><Hyperlink onClick={onQueueRun}>Queue run</Hyperlink></p>
                 </span>
             )}</div>
             <div>{status === 'queued' && (
                 <span>
                     <p>
-                        This analysis has been queued to run. You can cancel this run by clicking the Cancel button below.
+                        This analysis has been queued to run.
+                        {canEdit && " You can cancel this run by clicking the Cancel button below."}
                     </p>
                     <p><Hyperlink onClick={onDeleteRun}>Cancel run</Hyperlink></p>
                 </span>
@@ -140,9 +170,14 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
             <div>{status === 'failed' && (
                 <span>
                     <p>
-                        An error has occurred while running this analysis. You can delete this run using the button below.
+                        An error has occurred while running this analysis.
+                        {canEdit && " You can delete this run using the button below."}
                     </p>
-                    <Hyperlink onClick={onDeleteRun}>Delete run</Hyperlink>
+                    {
+                        canEdit && (
+                            <Hyperlink onClick={onDeleteRun}>Delete run</Hyperlink>
+                        )
+                    }
                     <p style={{color: 'red', wordWrap: 'break-word'}}>
                         {analysisInfo?.error}
                     </p>
@@ -156,10 +191,36 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
                 </span>
             )}</div>
             <hr />
+            {
+                analysisInfo?.listed ? (
+                    <p>
+                        This is analysis is public.&nbsp;
+                        {
+                            canEdit && (
+                                <Hyperlink onClick={handleUnlistAnalysis}>Unlist this analysis</Hyperlink>
+                            )
+                        }
+                    </p>
+                ) : (
+                    <p>
+                        This is analysis is not public.&nbsp;
+                        {
+                            canEdit && (
+                                <Hyperlink onClick={handleListAnalysis}>List this analysis</Hyperlink>
+                            )
+                        }
+                    </p>
+                )
+            }
+            <hr />
             {/* A clickable link to clone this analysis: */}
             <div style={{lineHeight: 2}} title={cloneAnalysisTooltip}><Hyperlink onClick={handleClone}>Clone this analysis</Hyperlink></div>
             {/* A clickable link to delete this analysis: */}
-            <div style={{lineHeight: 2}} title={deleteAnalysisTooltip}><Hyperlink color="darkred" onClick={handleDelete}>Delete this analysis</Hyperlink></div>
+            {
+                canEdit && (
+                    <div style={{lineHeight: 2}} title={deleteAnalysisTooltip}><Hyperlink color="darkred" onClick={handleDelete}>Delete this analysis</Hyperlink></div>
+                )
+            }
         </div>
     )
 }
@@ -167,7 +228,6 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, analysisInf
 const colorForStatus = (status: string) => {
     switch (status) {
         case 'none': return 'gray'
-        case 'requested': return 'black'
         case 'queued': return 'orange'
         case 'running': return 'blue'
         case 'completed': return 'green'

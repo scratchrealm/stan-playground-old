@@ -25,6 +25,10 @@ def create_summary(dir: str):
         if info.get('deleted', False):
             continue
 
+        # if not listed, skip
+        if not info.get('listed', False):
+            continue
+
         # read description from description.md file
         if os.path.exists(f'{path}/description.md'):
             with open(f'{path}/description.md') as f:
@@ -58,7 +62,7 @@ def create_summary(dir: str):
             'analysis_id': folder,
             'title': title,
             'status': info.get('status', 'none'),
-            'user_id': info.get('user_id', None),
+            'owner_id': info.get('owner_id', None),
             'data_size': os.path.getsize(f'{path}/data.json') if os.path.exists(f'{path}/data.json') else 0,
             'info': info,
             'description': description,

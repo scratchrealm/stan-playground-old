@@ -1,5 +1,4 @@
 import { FunctionComponent, useEffect } from "react";
-import { useAccessCode } from "../../AccessCodeContext";
 import Hyperlink from "../../components/Hyperlink";
 import TextEditor from "../TextEditor";
 import { AnalysisInfo, useAnalysisTextFile } from "../useAnalysisData";
@@ -8,19 +7,17 @@ type Props = {
     width: number
     height: number
     analysisId: string
+    canEdit: boolean
     analysisInfo: AnalysisInfo | undefined
     onRefreshStatus: () => void
-    onRequestRun: () => void
     onQueueRun: () => void
     onDeleteRun: () => void
 }
 
-const RunSamplerTab: FunctionComponent<Props> = ({width, height, analysisId, analysisInfo, onRefreshStatus, onRequestRun, onQueueRun, onDeleteRun}) => {
+const RunSamplerTab: FunctionComponent<Props> = ({width, height, canEdit, analysisId, analysisInfo, onRefreshStatus, onQueueRun, onDeleteRun}) => {
     const {text: runConsoleText, refresh: refreshRunConsoleText} = useAnalysisTextFile(analysisId, analysisInfo, 'run.console.txt')
 
     const infoPanelWidth = Math.min(500, width / 2)
-
-    const {accessCode} = useAccessCode()
 
     // whenever analysisInfo changes, refresh the run console text
     useEffect(() => {
@@ -33,26 +30,10 @@ const RunSamplerTab: FunctionComponent<Props> = ({width, height, analysisId, ana
         ) : analysisInfo.status === 'none' ? (
             <div>
                 <p>
-                    This analysis has not been run. You can request that it be run using the button below.
+                    This analysis has not been run.
+                    {canEdit && " You can queue it to run using the button below."}
                 </p>
-                <Hyperlink onClick={onRequestRun}>Request run</Hyperlink>
-            </div>
-        ) : analysisInfo.status === 'requested' ? (
-            <div>
-                <p>
-                    This analysis has been requested to run, but not queued.
-                </p>
-                {
-                    !accessCode ? (
-                        <p>You do not have an access code set. You can ask an administrator of this instance to queue analysis {analysisId}.</p>
-                    ) : (
-                        <div>
-                            <p>You have an access code set. Use the buttons below to queue or cancel the run.</p>
-                            <p><Hyperlink onClick={onQueueRun}>Queue run</Hyperlink></p>
-                            <p><Hyperlink onClick={onDeleteRun}>Cancel run</Hyperlink></p>
-                        </div>
-                    )
-                }
+                <Hyperlink onClick={onQueueRun}>Queue run</Hyperlink>
             </div>
         ) : analysisInfo.status === 'queued' ? (
             <div>Analysis has been queued but not started. <Hyperlink onClick={onRefreshStatus}>Refresh status</Hyperlink></div>
@@ -63,7 +44,9 @@ const RunSamplerTab: FunctionComponent<Props> = ({width, height, analysisId, ana
                 <p>
                     Analysis run has completed.
                 </p>
-                <Hyperlink onClick={onDeleteRun}>Delete run</Hyperlink>
+                {canEdit && (
+                    <Hyperlink onClick={onDeleteRun}>Delete run</Hyperlink>
+                )}
             </div>
         ) : analysisInfo.status === 'failed' ? (
             <div>Analysis has failed. Use the refresh button on the console output.</div>
