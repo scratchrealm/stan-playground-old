@@ -7,13 +7,13 @@ import stan_playground
 def cli():
     pass
 
-@click.command(help="Queue one or more sessions for processing")
-@click.argument('analysis_ids', nargs=-1)
-def queue(analysis_ids: List[str]):
-    if len(analysis_ids) == 0:
-        raise Exception('No analysis ids specified')
-    for analysis_id in analysis_ids:
-        stan_playground.queue_analysis(analysis_id, dir='.')
+# @click.command(help="Queue one or more sessions for processing")
+# @click.argument('analysis_ids', nargs=-1)
+# def queue(analysis_ids: List[str]):
+#     if len(analysis_ids) == 0:
+#         raise Exception('No analysis ids specified')
+#     for analysis_id in analysis_ids:
+#         stan_playground.queue_analysis(analysis_id, dir='.')
 
 @click.command(help="Start the processing")
 def start():
@@ -27,7 +27,7 @@ def update_summary():
 def generate_access_code():
     print(stan_playground.generate_access_code(dir='.'))
 
-cli.add_command(queue)
+# cli.add_command(queue)
 cli.add_command(start)
 cli.add_command(update_summary)
 cli.add_command(generate_access_code)
