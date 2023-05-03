@@ -61,6 +61,7 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
     useEffect(() => {
         if (!editor) return
         if (text === undefined) return
+        if (editor.getValue() === text) return
         editor.setValue(text || defaultText || '')
     }, [text, editor, defaultText])
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
@@ -128,22 +129,6 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
     }, [language])
     /////////////////////////////////////////////////
 
-    useEffect(() => {
-        if (!editor) return
-        let canceled = false
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() {
-            if (canceled) return
-            // cannot do the save here unfortunately, but at least we are intercepting the call
-            // See: https://github.com/microsoft/monaco-editor/issues/2947
-            if (!readOnly) {
-                alert('Use the save button to save the file')
-            }
-        })
-        return () => {
-            canceled = true
-        }
-    }, [editor, readOnly])
-
     const editedTextOverrider = useCallback((text: string) => {
         editor?.setValue(text)
     }, [editor])
@@ -154,10 +139,20 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
         }
     }, [editedTextOverrider, onEditedTextOverrider])
 
+    // Can't do this in the usual way with monaco editor:
+    // See: https://github.com/microsoft/monaco-editor/issues/2947
+    const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault()
+            if (!readOnly) {
+                handleSave()
+            }
+        }
+    }, [handleSave, readOnly])
 
     const toolbarHeight = 25
     return (
-        <div style={{position: 'absolute', width, height, overflow: 'hidden'}}>
+        <div style={{position: 'absolute', width, height, overflow: 'hidden'}} onKeyDown={handleKeyDown}>
             <NotSelectable>
                 <div style={{position: 'absolute', paddingLeft: 20, paddingTop: 5, width, height: toolbarHeight, backgroundColor: 'lightgray'}}>
                     {label}
