@@ -76,6 +76,7 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
                         { token: 'standistribution', foreground: '#9999FF' },
                         { token: 'stanfunction', foreground: 'ffffaa' },
                         { token: 'stanrangeconstraint', foreground: '#D48331' },
+                        { token: 'stanoperator', foreground: '#A8EEF7'},
                         { token: 'stantype', foreground: '#BD9BF8' },
                         { token: 'identifier', foreground: '#DDDDDD' },
                         { token: 'number', foreground: '#D48331' },
@@ -114,6 +115,7 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
                                 '@default': 'identifier'
                             }
                         }],
+                        [/~|:|\+=|=|<|>/, 'stanoperator'],
                         ...stanLang.tokenizer.root
                     ]
                     monaco.languages.register({id: 'stan'})
