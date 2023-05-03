@@ -19,7 +19,6 @@ const ConsoleOutputWindow: FunctionComponent<Props> = ({width, height, text, onR
             onSetText={() => {}}
             onReload={onReload}
             readOnly={true}
-            theme="vs-dark"
         />
     )
 }

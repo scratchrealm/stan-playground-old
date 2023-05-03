@@ -4,6 +4,7 @@ import { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { FunctionComponent, PropsWithChildren, useCallback, useEffect, useState } from "react";
 import Hyperlink from "../components/Hyperlink";
+import { highlightJsData } from "./stanLang";
 
 type Monaco = typeof monaco
 
@@ -19,7 +20,6 @@ type Props = {
     onEditedTextOverrider?: (cb: (text: string) => void) => void
     toolbarItems?: ToolbarItem[]
     label: string
-    theme?: 'vs' | 'vs-dark' | 'hc-black' | 'hc-light'
     width: number
     height: number
 }
@@ -30,7 +30,7 @@ export type ToolbarItem = {
     color?: string
 }
 
-const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, wordWrap, onReload, onEditedTextChanged, onEditedTextOverrider, toolbarItems, language, theme, label, width, height}) => {
+const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, readOnly, wordWrap, onReload, onEditedTextChanged, onEditedTextOverrider, toolbarItems, language, label, width, height}) => {
     const [internalText, setInternalText] = useState('')
     useEffect(() => {
         if (text !== undefined) {
@@ -62,22 +62,67 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
         if (!editor) return
         if (text === undefined) return
         editor.setValue(text || defaultText || '')
-    }, [text, editor, defaultText, theme])
+    }, [text, editor, defaultText])
     const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-        // monaco.languages.register({id: 'stan'})
-        // const stanLang: monaco.languages.IMonarchLanguage = {
-        //     defaultToken: 'invalid',
-        //     tokenizer: {
-        //       root: [
-        //         [/(\b)(data|parameters|model)(\b)/, { token: 'keyword' }],
-        //         [/\/\/.*$/, { token: 'comment' }],
-        //       ],
-        //     },
-        // }
-        // monaco.languages.setMonarchTokensProvider('stan', stanLang);
-                    
-        setEditor(editor)
-    }, [])
+        (async () => {
+            if (language === 'stan') {
+
+                monaco.editor.defineTheme('vs-stan', {
+                    base: 'vs-dark',
+                    inherit: true,
+                    rules: [
+                        { token: 'stanblock', foreground: '#C9A969', fontStyle: 'bold' }, // seems like underscores in tokens are not allowed! (took me a while to figure this out)
+                        { token: 'stanstatement', foreground: '#A8EEF7' },
+                        { token: 'standistribution', foreground: '#9999FF' },
+                        { token: 'stanfunction', foreground: 'ffffaa' },
+                        { token: 'stanrangeconstraint', foreground: '#D48331' },
+                        { token: 'stantype', foreground: '#BD9BF8' },
+                        { token: 'identifier', foreground: '#DDDDDD' },
+                        { token: 'number', foreground: '#D48331' },
+                        { token: 'string', foreground: '55ff55' }
+                    ],
+                    colors: {
+                    }
+                })
+                
+
+                // use cpp as a base language and then add stan keywords
+                const x = monaco.languages.getLanguages().filter(l => l.id ==="cpp")[0]
+                if (x) {
+                    const {language: cppLang} = await (x as any).loader()
+                    const hjd = highlightJsData()
+                    const stanLang = {...cppLang}
+                    stanLang.tokenizer = {...cppLang.tokenizer}
+                    stanLang.tokenizer.root = [...cppLang.tokenizer.root]
+                    // stanLang.keywords = [...hjd.BLOCKS, ...hjd.STATEMENTS, ...hjd.DISTRIBUTIONS, ...hjd.FUNCTIONS, ...hjd.RANGE_CONSTRAINTS, ...hjd.TYPES]
+                    stanLang.keywords = []
+                    stanLang.stan_blocks = hjd.BLOCKS
+                    stanLang.stan_statements = hjd.STATEMENTS
+                    stanLang.stan_distributions = hjd.DISTRIBUTIONS
+                    stanLang.stan_functions = hjd.FUNCTIONS
+                    stanLang.stan_range_constraints = hjd.RANGE_CONSTRAINTS
+                    stanLang.stan_types = hjd.TYPES
+                    stanLang.tokenizer.root = [
+                        [/[a-zA-Z_]\w*/, {
+                            cases: {
+                                '@stan_blocks': 'stanblock',
+                                '@stan_statements': 'stanstatement',
+                                '@stan_distributions': 'standistribution',
+                                '@stan_functions': 'stanfunction',
+                                '@stan_range_constraints': 'stanrangeconstraint',
+                                '@stan_types': 'stantype',
+                                '@default': 'identifier'
+                            }
+                        }],
+                        ...stanLang.tokenizer.root
+                    ]
+                    monaco.languages.register({id: 'stan'})
+                    monaco.languages.setMonarchTokensProvider('stan', stanLang)
+                }
+            }
+            setEditor(editor)
+        })()
+    }, [language])
     /////////////////////////////////////////////////
 
     const editedTextOverrider = useCallback((text: string) => {
@@ -120,7 +165,7 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
                         readOnly,
                         domReadOnly: readOnly,
                         wordWrap: wordWrap ? 'on' : 'off',
-                        theme: theme || 'vs-dark' // unfortunately we cannot do this on a per-editor basis - it's a global setting
+                        theme: 'vs-stan' // unfortunately we cannot do this on a per-editor basis - it's a global setting
                     }}
                 />
             </div>
