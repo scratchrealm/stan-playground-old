@@ -25,17 +25,17 @@ const StanCompileResultWindow: FunctionComponent<Props> = ({width, height, model
     if (!model) return <div />
     if ((model.errors) && (model.errors.length > 0)) {
         return (
-            <div style={{width, height, color: 'red', padding: 10, overflow: 'auto'}}>
+            <div style={{width, height, color: 'red', padding: 0, overflow: 'auto'}}>
                 <h3>Errors</h3>
-                {model.errors.map((error, i) => <div key={i}>{error}</div>)}
+                {model.errors.map((error, i) => <div key={i} style={{font: 'courier', fontSize: 13}}><pre>{error}</pre></div>)}
             </div>
         )
     }
     if ((model.warnings) && (model.warnings.length > 0)) {
         return (
-            <div style={{width, height, color: 'blue', padding: 10, overflow: 'auto'}}>
+            <div style={{width, height, color: 'blue', padding: 0, overflow: 'auto'}}>
                 <h3>Warnings</h3>
-                {model.warnings.map((warning, i) => <div key={i}>{warning}</div>)}
+                {model.warnings.map((warning, i) => <div key={i} style={{font: 'courier', fontSize: 13}}><pre>{warning}</pre></div>)}
             </div>
         )
     }

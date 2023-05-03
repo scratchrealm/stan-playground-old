@@ -2,7 +2,7 @@ import { Editor } from "@monaco-editor/react";
 import { Refresh } from "@mui/icons-material";
 import { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { FunctionComponent, PropsWithChildren, useCallback, useEffect, useState } from "react";
+import { FunctionComponent, PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
 import Hyperlink from "../components/Hyperlink";
 import { highlightJsData } from "./stanLang";
 
@@ -122,10 +122,27 @@ const TextEditor: FunctionComponent<Props> = ({text, defaultText, onSetText, rea
                     monaco.languages.setMonarchTokensProvider('stan', stanLang)
                 }
             }
+
             setEditor(editor)
         })()
     }, [language])
     /////////////////////////////////////////////////
+
+    useEffect(() => {
+        if (!editor) return
+        let canceled = false
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() {
+            if (canceled) return
+            // cannot do the save here unfortunately, but at least we are intercepting the call
+            // See: https://github.com/microsoft/monaco-editor/issues/2947
+            if (!readOnly) {
+                alert('Use the save button to save the file')
+            }
+        })
+        return () => {
+            canceled = true
+        }
+    }, [editor, readOnly])
 
     const editedTextOverrider = useCallback((text: string) => {
         editor?.setValue(text)
