@@ -1,7 +1,7 @@
 import { FunctionComponent, useCallback, useMemo, useState } from "react";
 import Splitter from "../../components/Splitter";
 import TextEditor, { ToolbarItem } from "../TextEditor";
-import { AnalysisInfo } from "../useAnalysisData";
+import { AnalysisInfo } from "./useAnalysisData";
 import StanCompileResultWindow from "./StanCompileResultWindow";
 
 type Props = {

@@ -1,4 +1,4 @@
-import { AnalysisInfo } from "./useAnalysisData"
+import { AnalysisInfo } from "./AnalysisPage/useAnalysisData"
 
 export type LocalStorageAnalysis = {
     analysisId: string

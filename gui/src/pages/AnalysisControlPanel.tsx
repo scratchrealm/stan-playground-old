@@ -4,7 +4,10 @@ import Hyperlink from "../components/Hyperlink"
 import { useStatusBar } from "../StatusBar/StatusBarContext"
 import useRoute from "../useRoute"
 import { addLocalStorageAnalysis, deleteLocalStorageAnalysis, getLocalStorageAnalysisEditToken } from "./localStorageAnalyses"
-import { AnalysisInfo } from "./useAnalysisData"
+import { AnalysisInfo } from "./AnalysisPage/useAnalysisData"
+import useProjectData from "./ProjectPage/useProjectData"
+import { getTitleFromMarkdown } from "./AnalysesTable"
+import { userId } from "@figurl/interface/dist/viewInterface/kacheryTypes"
 
 type Props = {
     analysisId: string
@@ -25,48 +28,6 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
     const {setStatusBarMessage} = useStatusBar()
     const status = analysisInfo !== undefined ? analysisInfo?.status || 'none' : 'undefined'
     const mcmcMonitorBaseUrl = useMcmcMonitorBaseUrl()
-    const handleClone = useCallback(() => {
-        // prompt the user if they are sure they want to clone this analysis
-        if (!window.confirm('Are you sure you want to CLONE this analysis?')) return
-        (async() => {
-            const {result} = await serviceQuery('stan-playground', {
-                type: 'clone_analysis',
-                analysis_id: analysisId
-            }, {
-                includeUserId: true
-            })
-            setRoute({page: 'analysis', analysisId: result.newAnalysisId})
-            addLocalStorageAnalysis({analysisId: result.newAnalysisId, editToken: result.editToken})
-            setTimeout(() => {
-                // provide a popup box that says that the analysis has been clone and you are not viewing the clone
-                setStatusBarMessage(`Analysis has been cloned. You are now viewing the clone.`)
-            }, 500)
-        })()
-    }, [analysisId, setRoute, setStatusBarMessage])
-    const handleDelete = useCallback(() => {
-        // prompt the user if they are sure they want to delete this analysis
-        if (!window.confirm('Are you sure you want to DELETE this analysis?')) return
-        (async() => {
-            const {result} = await serviceQuery('stan-playground', {
-                type: 'delete_analysis',
-                analysis_id: analysisId,
-                edit_token: getLocalStorageAnalysisEditToken(analysisId)
-            }, {
-                includeUserId: true
-            })
-            if (result.success) {
-                deleteLocalStorageAnalysis(analysisId)
-                setRoute({page: 'home'})
-                setTimeout(() => {
-                    // provide a popup box that says that the analysis has been deleted
-                    setStatusBarMessage(`Analysis has been deleted.`)
-                }, 500)
-            }
-            else {
-                alert(`Failed to delete analysis: ${result.error}`)
-            }
-        })()
-    }, [analysisId, setRoute, setStatusBarMessage])
 
     const handleListAnalysis = useCallback(() => {
         (async() => {
@@ -114,9 +75,94 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
         })()
     }, [analysisId, setStatusBarMessage, onRefreshAnalysisInfo])
 
+    const projectId = analysisInfo?.project_id || ''
+
+    const {descriptionMdText: projectDescription} = useProjectData(projectId)
+
+    const handleClone = useCallback(() => {
+        // prompt the user if they are sure they want to clone this analysis
+        if (!window.confirm('Are you sure you want to CLONE this analysis?')) return
+        (async() => {
+            const originalProjectId = projectId
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'clone_analysis',
+                analysis_id: analysisId
+            }, {
+                includeUserId: true
+            })
+            if (!result.success) {
+                alert(`Failed to clone analysis: ${result.error}`)
+                return
+            }
+            addLocalStorageAnalysis({analysisId: result.newAnalysisId, editToken: result.editToken})
+            setTimeout(() => {
+                // provide a popup box that says that the analysis has been clone and you are not viewing the clone
+                setStatusBarMessage(`Analysis has been cloned. You are now viewing the clone.`)
+                if ((originalProjectId) && (userId)) {
+                    (async() => {
+                        if (window.confirm('Do you want to set the project of the clone to the same project as the original?')) {
+                            const {result: result2} = await serviceQuery('stan-playground', {
+                                type: 'set_analysis_project',
+                                analysis_id: result.newAnalysisId,
+                                project_id: originalProjectId
+                            }, {
+                                includeUserId: true
+                            })
+                            if (!result2.success) {
+                                alert(`Failed to move analysis to the same project as the original: ${result.error}`)
+                            }
+                        }
+                        setRoute({page: 'analysis', analysisId: result.newAnalysisId})
+                    })()
+                }
+                else {
+                    setRoute({page: 'analysis', analysisId: result.newAnalysisId})
+                }
+            }, 500)
+        })()
+    }, [analysisId, setRoute, setStatusBarMessage, projectId])
+
+    const handleDelete = useCallback(() => {
+        // prompt the user if they are sure they want to delete this analysis
+        if (!window.confirm('Are you sure you want to DELETE this analysis?')) return
+        (async() => {
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'delete_analysis',
+                analysis_id: analysisId,
+                edit_token: getLocalStorageAnalysisEditToken(analysisId)
+            }, {
+                includeUserId: true
+            })
+            if (result.success) {
+                deleteLocalStorageAnalysis(analysisId)
+                if (projectId) {
+                    setRoute({page: 'project', projectId})
+                }
+                else {
+                    setRoute({page: 'home'})
+                }
+                setTimeout(() => {
+                    // provide a popup box that says that the analysis has been deleted
+                    setStatusBarMessage(`Analysis has been deleted.`)
+                }, 500)
+            }
+            else {
+                alert(`Failed to delete analysis: ${result.error}`)
+            }
+        })()
+    }, [analysisId, setRoute, setStatusBarMessage, projectId])
+
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 14, userSelect: 'none'}}>
-            <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Back to analyses</Hyperlink></div>
+            <div>
+                {
+                    projectId ? (
+                        <Hyperlink onClick={() => setRoute({page: 'project', projectId})}>&#8592; Back to project</Hyperlink>
+                    ) : (
+                        <Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Home</Hyperlink>
+                    )
+                }
+            </div>
             <hr />
             <div>Analysis: {analysisId}</div>
             <div>Status: <span style={{color: colorForStatus(status)}}>{status}</span> (<Hyperlink onClick={onRefreshAnalysisInfo}>refresh</Hyperlink>)</div>
@@ -190,6 +236,16 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
                     }
                 </span>
             )}</div>
+            <hr />
+            {
+                projectId && projectDescription ? (
+                    <div>
+                        Part of project: <Hyperlink onClick={() => setRoute({page: 'project', projectId})}>{getTitleFromMarkdown(projectDescription || '')}</Hyperlink>
+                    </div>
+                ) : (
+                    <div>Not part of a project</div>
+                )
+            }
             <hr />
             {
                 analysisInfo?.listed ? (

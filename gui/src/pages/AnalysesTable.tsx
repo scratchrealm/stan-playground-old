@@ -2,7 +2,7 @@ import { FunctionComponent } from "react";
 import Hyperlink from "../components/Hyperlink";
 import useRoute from "../useRoute";
 import './scientific-table.css';
-import { AnalysisInfo } from "./useAnalysisData";
+import { AnalysisInfo } from "./AnalysisPage/useAnalysisData";
 import { Summary } from "./useSummary";
 
 type Props = {
@@ -32,9 +32,7 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                 <thead>
                     <tr>
                         <th>Analysis</th>
-                        <th>Title</th>
                         <th>Owner</th>
-                        <th>Listed</th>
                         <th>Status</th>
                         <th>Elapsed</th>
                         <th>Created</th>
@@ -46,19 +44,11 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                         <tr key={analysis.analysis_id}>
                             <td>
                                 <Hyperlink onClick={() => setRoute({page: 'analysis', analysisId: analysis.analysis_id})}>
-                                    {analysis.analysis_id}
-                                </Hyperlink>
-                            </td>
-                            <td>
-                                <Hyperlink onClick={() => setRoute({page: 'analysis', analysisId: analysis.analysis_id})}>
-                                    {analysis.title || getTitleFromMarkdown(analysis.description)}
+                                    {analysis.title || getTitleFromMarkdown(analysis.description)} ({analysis.analysis_id})
                                 </Hyperlink>
                             </td>
                             <td>
                                 {analysis.owner_id || ''}
-                            </td>
-                            <td>
-                                {analysis.info.listed ? 'listed' : 'unlisted'}
                             </td>
                             <td>{analysis.status} {createTimestampText(analysis.info)}</td>
                             {/* <td>
@@ -85,7 +75,7 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
     )
 }
 
-function removeFirstHeaderLineInMarkdown(text: string) {
+export function removeFirstHeaderLineInMarkdown(text: string) {
     const lines = text.split('\n')
     if (lines.length === 0) return ''
     if (lines[0].startsWith('# ')) {
@@ -107,7 +97,7 @@ export function getTitleFromMarkdown(markdown: string) {
     return ''
 }
 
-function abbreviateString(s: string, maxLength: number) {
+export function abbreviateString(s: string, maxLength: number) {
     if (s.length <= maxLength) return s
     else return s.slice(0, maxLength) + '...'
 }
@@ -150,7 +140,7 @@ export function createElapsedText(info: AnalysisInfo) {
 
 
 // thanks https://stackoverflow.com/a/6109105/160863 and gh copilot!
-function timeAgoString(timestampSeconds?: number) {
+export function timeAgoString(timestampSeconds?: number) {
     if (timestampSeconds === undefined) return ''
     const now = Date.now()
     const diff = now - timestampSeconds * 1000
@@ -181,7 +171,7 @@ function timeAgoString(timestampSeconds?: number) {
     }
 }
 
-function elapsedTimeString(numSeconds?: number) {
+export function elapsedTimeString(numSeconds?: number) {
     if (numSeconds === undefined) return ''
     numSeconds = Math.floor(numSeconds)
     const numMinutes = Math.floor(numSeconds / 60)

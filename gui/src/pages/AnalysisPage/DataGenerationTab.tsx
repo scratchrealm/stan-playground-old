@@ -5,7 +5,7 @@ import Splitter from "../../components/Splitter"
 import { useStatusBar } from "../../StatusBar/StatusBarContext"
 import { getLocalStorageAnalysisEditToken } from "../localStorageAnalyses"
 import TextEditor, { ToolbarItem } from "../TextEditor"
-import { AnalysisInfo, useAnalysisTextFile } from "../useAnalysisData"
+import { AnalysisInfo, useAnalysisTextFile } from "./useAnalysisData"
 import ConsoleOutputWindow from "./ConsoleOutputWindow"
 
 type Props = {

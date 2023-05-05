@@ -3,7 +3,7 @@ import { FunctionComponent, useCallback, useEffect, useMemo } from "react";
 import AnalysisControlPanel from "../AnalysisControlPanel";
 import { getLocalStorageAnalysisEditToken, setLocalStorageAnalysisAnalysisInfo, setLocalStorageAnalysisDescriptionMdText } from "../localStorageAnalyses";
 import TabWidget from "../TabWidget/TabWidget";
-import useAnalysisData from "../useAnalysisData";
+import useAnalysisData from "./useAnalysisData";
 import DataGenerationTab from "./DataGenerationTab";
 import DataTab from "./DataTab";
 import MainTab from "./MainTab";

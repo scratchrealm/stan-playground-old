@@ -1,7 +1,7 @@
 import { FunctionComponent, useEffect } from "react";
 import Hyperlink from "../../components/Hyperlink";
 import TextEditor from "../TextEditor";
-import { AnalysisInfo, useAnalysisTextFile } from "../useAnalysisData";
+import { AnalysisInfo, useAnalysisTextFile } from "./useAnalysisData";
 
 type Props = {
     width: number

@@ -1,13 +1,14 @@
 import { getFileData, serviceQuery, useSignedIn } from "@figurl/interface"
 import YAML from 'js-yaml'
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useStatusBar } from "../StatusBar/StatusBarContext"
-import { getLocalStorageAnalysisEditToken } from "./localStorageAnalyses"
+import { useStatusBar } from "../../StatusBar/StatusBarContext"
+import { getLocalStorageAnalysisEditToken } from "../localStorageAnalyses"
 
 export type AnalysisInfo = {
     status: 'none' | 'queued' | 'running' | 'completed' | 'failed'
     error?: string
     owner_id?: string
+    project_id?: string
     timestamp_created?: number
     timestamp_modified?: number
     timestamp_queued?: number

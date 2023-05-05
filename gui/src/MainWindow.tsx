@@ -2,6 +2,7 @@ import { startListeningToParent, useWindowDimensions } from "@figurl/interface";
 import { FunctionComponent } from "react";
 import AnalysisPage from "./pages/AnalysisPage/AnalysisPage";
 import Home from "./pages/Home";
+import ProjectPage from "./pages/ProjectPage/ProjectPage";
 import StatusBar from "./StatusBar/StatusBar";
 import useRoute from "./useRoute";
 
@@ -18,6 +19,8 @@ const MainWindow: FunctionComponent = () => {
 						<Home width={width} height={height - statusBarHeight} />
 					) : route.page === 'analysis' ? (
 						<AnalysisPage analysisId={route.analysisId} width={width} height={height - statusBarHeight} />
+					) : route.page === 'project' ? (
+						<ProjectPage projectId={route.projectId} width={width} height={height - statusBarHeight} />
 					) : (
 						<div>Unknown page: {(route as any).page}</div>
 					)

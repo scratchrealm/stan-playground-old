@@ -1,10 +1,11 @@
-import { serviceQuery } from "@figurl/interface";
-import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
+import { serviceQuery, useSignedIn } from "@figurl/interface";
+import { FunctionComponent, useCallback, useMemo } from "react";
 import Hyperlink from "../components/Hyperlink";
 import { useStatusBar } from "../StatusBar/StatusBarContext";
 import useRoute from "../useRoute";
 import AnalysesTable from "./AnalysesTable";
 import { addLocalStorageAnalysis, getLocalStorageAnalyses } from "./localStorageAnalyses";
+import ProjectsTable from "./ProjectsTable";
 import useSummary, { Summary } from "./useSummary";
 
 type Props = {
@@ -42,15 +43,31 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
         })()
     }, [refreshSummary, setStatusBarMessage, setRoute])
 
-    const [takingLongerThanExpected, setTakingLongerThanExpected] = useState(false)
-    useEffect(() => {
-        const a = setTimeout(() => {
-            setTakingLongerThanExpected(true)
-        }, 2500)
-        return () => {
-            clearTimeout(a)
+    const {userId} = useSignedIn()
+
+    const handleCreateNewProject = useCallback(() => {
+        if (!userId) {
+            window.alert('You must be signed in to create a new project.')
+            return
         }
-    }, [])
+        // Confirm that user wants to create a new project
+        if (!window.confirm('Create a new project?')) return
+        (async () => {
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'create_project'
+            }, {
+                includeUserId: true
+            })
+            if (!result.success) {
+                setStatusBarMessage(`Failed to create new project.`)
+                return
+            }
+            setRoute({page: 'project', projectId: result.project_id})
+            setTimeout(() => {
+                setStatusBarMessage(`New project has been created.`)
+            }, 500)
+        })()
+    }, [setRoute, setStatusBarMessage, userId])
 
     const padding = 20
 
@@ -78,21 +95,17 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
             <div>
                 <Hyperlink onClick={handleCreateNewAnalysis}>Create new analysis</Hyperlink>
                 &nbsp;|&nbsp;
-                <Hyperlink onClick={refreshSummary}>Refresh table</Hyperlink>
+                <Hyperlink onClick={handleCreateNewProject}>Create new project</Hyperlink>
                 &nbsp;|&nbsp;
                 <a href="https://github.com/scratchrealm/stan-playground/blob/main/README.md" target="_blank" rel="noopener noreferrer">View documentation</a>
             </div>
-            <h3>Public analyses</h3>
+            <h3>Public projects</h3>
             {
-                summary ? (
-                    <AnalysesTable summary={summary} />
-                ) : (
-                    !takingLongerThanExpected ? (
-                        <div>Loading...</div>
-                    ) : (
-                        <div>Loading is taking longer than expected. You may want to try refreshing the page.</div>
-                    )
-                )
+                <ProjectsTable mode="listed" />
+            }
+            <h3>Your projects</h3>
+            {
+                <ProjectsTable mode="user" />
             }
             <h3>Your recent analyses</h3>
             <AnalysesTable summary={summaryFromLocalStorage} />

@@ -6,6 +6,9 @@ export type Route = {
 } | {
     page: 'analysis'
     analysisId: string
+} | {
+    page: 'project'
+    projectId: string
 }
 
 const useRoute = () => {
@@ -18,6 +21,14 @@ const useRoute = () => {
             return {
                 page: 'analysis',
                 analysisId
+            }
+        }
+        else if (p.startsWith('/project/')) {
+            const a = p.split('/')
+            const projectId = a[2]
+            return {
+                page: 'project',
+                projectId
             }
         }
         else {
@@ -33,6 +44,9 @@ const useRoute = () => {
         }
         else if (r.page === 'analysis') {
             updateUrlState({path: `/analysis/${r.analysisId}`})
+        }
+        else if (r.page === 'project') {
+            updateUrlState({path: `/project/${r.projectId}`})
         }
     }, [updateUrlState])
 

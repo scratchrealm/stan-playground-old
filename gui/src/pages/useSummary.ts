@@ -1,6 +1,6 @@
 import { getFileData } from "@figurl/interface"
 import { useCallback, useEffect, useState } from "react"
-import { AnalysisInfo } from "./useAnalysisData"
+import { AnalysisInfo } from "./AnalysisPage/useAnalysisData"
 
 export type Summary = {
     analyses: {

@@ -1,6 +1,6 @@
 import { FunctionComponent } from "react"
 import TextEditor from "../TextEditor"
-import { AnalysisInfo } from "../useAnalysisData"
+import { AnalysisInfo } from "./useAnalysisData"
 
 
 type Props = {
