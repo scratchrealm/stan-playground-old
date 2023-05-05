@@ -105,7 +105,7 @@ const ProjectPageMainSection: FunctionComponent<Props> = ({projectId, width, hei
                 setStatusBarMessage(val ? `Project is now listed.` : `Project is no longer listed.`)
             }, 500)
         })()
-    }, [projectId, setStatusBarMessage])
+    }, [projectId, setStatusBarMessage, refreshProjectConfig])
 
     return (
         <div style={{position: 'absolute', width, height}}>
