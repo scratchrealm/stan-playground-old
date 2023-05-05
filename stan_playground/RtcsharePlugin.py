@@ -9,7 +9,7 @@ from .create_summary import create_summary
 from .generate_access_code import check_valid_access_code
 from .generate_analysis_data import generate_analysis_data
 from .compile_analysis_model import compile_analysis_model
-from .project_query_handlers import handle_get_projects, handle_create_project, handle_delete_project, handle_set_analysis_project, handle_get_project_analyses, handle_set_project_text_file
+from .project_query_handlers import handle_get_projects, handle_create_project, handle_delete_project, handle_set_analysis_project, handle_get_project_analyses, handle_set_project_text_file, handle_set_project_listed
 from .project_query_handlers import check_valid_project_id
 from ._get_full_path import _get_full_path
 
@@ -40,6 +40,9 @@ class StanPlaygroundService:
                 return handle_get_project_analyses(query, dir=dir, user_id=user_id)
             elif type0 == 'set_project_text_file':
                 return handle_set_project_text_file(query, dir=dir, user_id=user_id)
+            elif type0 == 'set_project_listed':
+                return handle_set_project_listed(query, dir=dir, user_id=user_id)
+
             elif type0 == 'set_analysis_text_file':
                 return handle_set_analysis_text_file(query, dir=dir, user_id=user_id)
             elif type0 == 'set_analysis_status':
@@ -50,8 +53,8 @@ class StanPlaygroundService:
                 return handle_delete_analysis(query, dir=dir, user_id=user_id)
             elif type0 == 'undelete_analysis':
                 return handle_undelete_analysis(query, dir=dir, user_id=user_id)
-            elif type0 == 'set_analysis_listed':
-                return handle_set_analysis_listed(query, dir=dir, user_id=user_id)
+            # elif type0 == 'set_analysis_listed':
+            #     return handle_set_analysis_listed(query, dir=dir, user_id=user_id)
             elif type0 == 'create_analysis':
                 return handle_create_analysis(query, dir=dir, user_id=user_id)
             elif type0 == 'generate_analysis_data':
@@ -187,28 +190,6 @@ def handle_undelete_analysis(query: dict, *, dir: str, user_id: Union[str, None]
         raise Exception('Not authorized to edit this analysis.')
 
     info['deleted'] = False
-    _set_analysis_info(analysis_id, info, dir=dir)
-    create_summary(dir=_get_full_path('$dir', dir=dir))
-    return {'success': True}, b''
-
-def handle_set_analysis_listed(query: dict, *, dir: str, user_id: Union[str, None]=None) -> Tuple[dict, bytes]:
-    analysis_id = query['analysis_id']
-    check_valid_analysis_id(analysis_id)
-
-    if not user_id:
-        raise Exception('You must be logged in to list this analysis')
-
-    info = _get_analysis_info(analysis_id, dir=dir)
-    analysis_edit_token = _get_analysis_edit_token(analysis_id, dir=dir)
-    if not _can_edit_analysis(analysis_info=info, user_id=user_id, analysis_edit_token=analysis_edit_token, query=query):
-        raise Exception('Not authorized to edit this analysis.')
-    
-    if info.get('owner_id', None):
-        if info['owner_id'] != user_id:
-            raise Exception(f'This analysis is not owned by you, so you cannot list it.')
-        
-    info['owner_id'] = user_id
-    info['listed'] = query['listed']
     _set_analysis_info(analysis_id, info, dir=dir)
     create_summary(dir=_get_full_path('$dir', dir=dir))
     return {'success': True}, b''

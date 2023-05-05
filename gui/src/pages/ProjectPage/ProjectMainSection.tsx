@@ -22,7 +22,7 @@ type ProjectAnalysis = {
 
 const ProjectPageMainSection: FunctionComponent<Props> = ({projectId, width, height}) => {
     // important to do this here just once rather than separately in the various editors
-    const {descriptionMdText, setDescriptionMdText, refreshDescriptionMdText, projectConfig} = useProjectData(projectId)
+    const {descriptionMdText, setDescriptionMdText, refreshDescriptionMdText, projectConfig, refreshProjectConfig} = useProjectData(projectId)
 
     const projectTitle = getTitleFromMarkdown(descriptionMdText || '')
 
@@ -87,6 +87,26 @@ const ProjectPageMainSection: FunctionComponent<Props> = ({projectId, width, hei
         })()
     }, [refreshAnalyses, projectId, setStatusBarMessage])
 
+    const handleMakeProjectListed = useCallback((val: boolean) => {
+        (async () => {
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'set_project_listed',
+                project_id: projectId,
+                listed: val
+            }, {
+                includeUserId: true
+            })
+            if (!result.success) {
+                setStatusBarMessage(`Failed to modify project listing status: ${result.error}`)
+                return
+            }
+            refreshProjectConfig()
+            setTimeout(() => {
+                setStatusBarMessage(val ? `Project is now listed.` : `Project is no longer listed.`)
+            }, 500)
+        })()
+    }, [projectId, setStatusBarMessage])
+
     return (
         <div style={{position: 'absolute', width, height}}>
             <div style={{padding: 20}}>
@@ -104,6 +124,20 @@ const ProjectPageMainSection: FunctionComponent<Props> = ({projectId, width, hei
                         </tr>
                     </tbody>
                 </table>
+                {
+                    projectConfig && !projectConfig.listed && (
+                        <div>
+                            This project is not publicly listed. <Hyperlink onClick={() => {handleMakeProjectListed(true)}}>List this project.</Hyperlink>
+                        </div>
+                    )
+                }
+                {
+                    projectConfig && projectConfig.listed && (
+                        <div>
+                            This project is publicly listed. <Hyperlink onClick={() => {handleMakeProjectListed(false)}}>Unlist this project.</Hyperlink>
+                        </div>
+                    )
+                }
                 <hr />
                 <div style={{paddingBottom: 10}}>
                     <Hyperlink onClick={handleCreateNewAnalysis}>Create new analysis</Hyperlink>

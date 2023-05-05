@@ -232,6 +232,33 @@ def handle_set_project_text_file(query: dict, *, dir: str, user_id: Union[str, N
 
     return {'success': True}, b''
 
+def handle_set_project_listed(query: dict, *, dir: str, user_id: Union[str, None]=None) -> Tuple[dict, bytes]:
+    project_id = query['project_id']
+    check_valid_project_id(project_id)
+
+    project_dir = f'{_get_full_path(path="$dir/projects", dir=dir)}/{project_id}'
+    if not os.path.isdir(project_dir):
+        raise Exception(f'Project does not exist: {project_id}')
+    project_yaml_path = f'{project_dir}/project.yaml'
+    if not os.path.isfile(project_yaml_path):
+        raise Exception(f'Project config does not exist: {project_id}')
+    with open(project_yaml_path, 'r') as f:
+        project_yaml = yaml.safe_load(f)
+    okay_to_edit = False
+    if project_yaml.get('owner_id', None) == user_id:
+        okay_to_edit = True
+    for user in project_yaml.get('users', []):
+        if user.get('user_id', None) == user_id:
+            okay_to_edit = True
+    if not okay_to_edit:
+        raise Exception(f'Permission denied: user {user_id} is not in project {project_id}')
+    
+    project_yaml['listed'] = query['listed']
+    with open(project_yaml_path, 'w') as f:
+        yaml.dump(project_yaml, f)
+
+    return {'success': True}, b''
+
 def _random_project_id(num_chars: int) -> str:
     # include lowercase and digits
     return ''.join(random.choice(string.ascii_uppercase) for _ in range(num_chars))

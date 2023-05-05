@@ -45,6 +45,7 @@ export const useProjectTextFile = (projectId: string | undefined, name: string) 
 export type ProjectConfig = {
     project_id: string
     owner_id: string
+    listed?: boolean
     users: {
         user_id: string
     }[]
