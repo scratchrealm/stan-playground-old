@@ -152,6 +152,26 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
         })()
     }, [analysisId, setRoute, setStatusBarMessage, projectId])
 
+    const handleAddToAProject = useCallback(() => {
+        // prompt the user for the project id
+        const projectId = window.prompt('Enter the project id to add this analysis to:')
+        if (!projectId) return
+        (async() => {
+            const {result} = await serviceQuery('stan-playground', {
+                type: 'set_analysis_project',
+                analysis_id: analysisId,
+                project_id: projectId,
+            }, {
+                includeUserId: true
+            })
+            if (!result.success) {
+                alert(`Failed to add analysis to project: ${result.error}`)
+                return
+            }
+            onRefreshAnalysisInfo()
+        })()
+    }, [analysisId, onRefreshAnalysisInfo])
+
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 14, userSelect: 'none'}}>
             <div>
@@ -243,7 +263,9 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
                         Part of project: <Hyperlink onClick={() => setRoute({page: 'project', projectId})}>{getTitleFromMarkdown(projectDescription || '')}</Hyperlink>
                     </div>
                 ) : (
-                    <div>Not part of a project</div>
+                    <div>
+                        Not part of a project. <Hyperlink onClick={handleAddToAProject}>Add to a project.</Hyperlink>
+                    </div>
                 )
             }
             <hr />
