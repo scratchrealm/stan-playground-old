@@ -156,7 +156,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
     const handleAddToAProject = useCallback(() => {
         (async() => {
             // prompt the user for the project id
-            const projectId = await prompt('Enter the project ID to add this analysis to:')
+            const projectId = await prompt('Enter the project ID to add this analysis to:', '')
             if (!projectId) return
             const {result} = await serviceQuery('stan-playground', {
                 type: 'set_analysis_project',

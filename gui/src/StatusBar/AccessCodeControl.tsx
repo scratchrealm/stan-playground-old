@@ -13,7 +13,7 @@ const AccessCodeControl: FunctionComponent<Props> = () => {
     const {accessCode, setAccessCode} = useAccessCode()
     const handleSetAccessCode = useCallback(() => {
         (async () => {
-            const newAccessCode = await prompt('Enter access code:')
+            const newAccessCode = await prompt('Enter access code:', '')
             if (!newAccessCode) return
             setAccessCode(newAccessCode as string)
         })()
