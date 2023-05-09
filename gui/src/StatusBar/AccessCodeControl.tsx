@@ -1,5 +1,5 @@
 import { FunctionComponent, useCallback } from "react";
-import { prompt } from "react-alert-async";
+import { prompt } from "../confirm_prompt_alert";
 import { useAccessCode } from "../AccessCodeContext";
 import Hyperlink from "../components/Hyperlink";
 

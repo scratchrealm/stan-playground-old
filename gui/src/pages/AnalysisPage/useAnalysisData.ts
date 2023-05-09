@@ -1,7 +1,7 @@
 import { getFileData, serviceQuery, useSignedIn } from "@figurl/interface"
 import YAML from 'js-yaml'
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { alert } from "react-alert-async"
+import { alert } from "../../confirm_prompt_alert"
 import { useStatusBar } from "../../StatusBar/StatusBarContext"
 import { getLocalStorageAnalysisEditToken } from "../localStorageAnalyses"
 

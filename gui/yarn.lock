@@ -2660,11 +2660,6 @@ randomfill@^1.0.3:
     randombytes "^2.0.5"
     safe-buffer "^5.1.0"
 
-react-alert-async@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/react-alert-async/-/react-alert-async-1.2.0.tgz#16b39fa6bae31880f43dd41df03bb39cf59ca4a7"
-  integrity sha512-/BYEEtWJpjqJAW7L9/euu9mL+c3FNKzk7pBh7PaeghWxAEOv1WJuoTbCxfykXv2VydXw5VDKvFGKL3vP/r/c5Q==
-
 react-dom@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"

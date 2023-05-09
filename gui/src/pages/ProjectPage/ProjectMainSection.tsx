@@ -1,13 +1,13 @@
-import { serviceQuery, useSignedIn } from "@figurl/interface";
+import { serviceQuery } from "@figurl/interface";
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
 import Hyperlink from "../../components/Hyperlink";
+import { confirm } from "../../confirm_prompt_alert";
+import { useStatusBar } from "../../StatusBar/StatusBarContext";
 import useRoute from "../../useRoute";
 import AnalysesTable, { getTitleFromMarkdown } from "../AnalysesTable";
-import useProjectData from "./useProjectData";
-import {Summary} from "../useSummary"
-import { useStatusBar } from "../../StatusBar/StatusBarContext";
 import { AnalysisInfo } from "../AnalysisPage/useAnalysisData";
-import { confirm } from "react-alert-async";
+import { Summary } from "../useSummary";
+import useProjectData from "./useProjectData";
 
 type Props = {
     projectId: string

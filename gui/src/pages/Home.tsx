@@ -1,6 +1,6 @@
 import { serviceQuery, useSignedIn } from "@figurl/interface";
 import { FunctionComponent, useCallback, useMemo } from "react";
-import { alert, confirm } from 'react-alert-async';
+import { alert, confirm } from '../confirm_prompt_alert';
 import Hyperlink from "../components/Hyperlink";
 import { useStatusBar } from "../StatusBar/StatusBarContext";
 import useRoute from "../useRoute";

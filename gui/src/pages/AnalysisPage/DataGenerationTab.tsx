@@ -7,7 +7,7 @@ import { getLocalStorageAnalysisEditToken } from "../localStorageAnalyses"
 import TextEditor, { ToolbarItem } from "../TextEditor"
 import { AnalysisInfo, useAnalysisTextFile } from "./useAnalysisData"
 import ConsoleOutputWindow from "./ConsoleOutputWindow"
-import { alert } from "react-alert-async"
+import { alert } from "../../confirm_prompt_alert"
 
 type Props = {
     width: number

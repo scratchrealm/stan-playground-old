@@ -8,7 +8,7 @@ import DataGenerationTab from "./DataGenerationTab";
 import DataTab from "./DataTab";
 import MainTab from "./MainTab";
 import RunSamplerTab from "./RunSamplerTab";
-import { confirm } from "react-alert-async";
+import { confirm } from "../../confirm_prompt_alert";
 
 type Props = {
     analysisId: string

@@ -8,7 +8,7 @@ import { AnalysisInfo } from "./AnalysisPage/useAnalysisData"
 import useProjectData from "./ProjectPage/useProjectData"
 import { getTitleFromMarkdown } from "./AnalysesTable"
 import { userId } from "@figurl/interface/dist/viewInterface/kacheryTypes"
-import { confirm, prompt } from "react-alert-async"
+import { confirm, prompt } from "../confirm_prompt_alert"
 
 type Props = {
     analysisId: string
