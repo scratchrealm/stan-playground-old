@@ -3,7 +3,7 @@ import yaml
 import shutil
 import time
 from .create_summary import create_summary
-from .RtcsharePlugin import check_valid_analysis_id
+from .query_handlers._check_valid import check_valid_analysis_id
 
 
 def queue_analysis(analysis_id: str, *, dir: str):

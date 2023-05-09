@@ -7,6 +7,7 @@ import { getLocalStorageAnalysisEditToken } from "../localStorageAnalyses"
 import TextEditor, { ToolbarItem } from "../TextEditor"
 import { AnalysisInfo, useAnalysisTextFile } from "./useAnalysisData"
 import ConsoleOutputWindow from "./ConsoleOutputWindow"
+import { alert } from "react-alert-async"
 
 type Props = {
     width: number
@@ -29,15 +30,15 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, canEdit, da
     const {setStatusBarMessage} = useStatusBar()
 
     const handleGenerate = useCallback(() => {
-        if (accessCodeHasExpired(accessCode)) {
-            window.alert("Access code has expired")
-            return
-        }
-        if (!accessCode) {
-            window.alert("Access code has not been set")
-            return
-        }
         (async () => {
+            if (accessCodeHasExpired(accessCode)) {
+                await alert("Access code has expired")
+                return
+            }
+            if (!accessCode) {
+                await alert("Access code has not been set")
+                return
+            }
             setStatusBarMessage('Generating data...')
             try {
                 const {result} = await serviceQuery('stan-playground', {
@@ -54,7 +55,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, canEdit, da
                 refreshDataConsoleText()
                 setTimeout(() => {
                     setStatusBarMessage('Error generating data')
-                    window.alert(`Error generating data: ${err.message}`)
+                    alert(`Error generating data: ${err.message}`)
                 }, 200)
                 return
             }

@@ -1,5 +1,6 @@
 import { serviceQuery, useSignedIn } from "@figurl/interface";
 import { FunctionComponent, useCallback, useMemo } from "react";
+import { alert, confirm } from 'react-alert-async';
 import Hyperlink from "../components/Hyperlink";
 import { useStatusBar } from "../StatusBar/StatusBarContext";
 import useRoute from "../useRoute";
@@ -21,9 +22,9 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
     const {setRoute} = useRoute()
 
     const handleCreateNewAnalysis = useCallback(() => {
-        // Confirm that user wants to create a new analysis
-        if (!window.confirm('Create a new analysis?')) return
         (async () => {
+            // Confirm that user wants to create a new analysis
+            if (!await confirm('Create a new analysis?')) return
             const {result} = await serviceQuery('stan-playground', {
                 type: 'create_analysis'
             }, {
@@ -46,13 +47,13 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
     const {userId} = useSignedIn()
 
     const handleCreateNewProject = useCallback(() => {
-        if (!userId) {
-            window.alert('You must be signed in to create a new project.')
-            return
-        }
-        // Confirm that user wants to create a new project
-        if (!window.confirm('Create a new project?')) return
         (async () => {
+            if (!userId) {
+                await alert('You must be signed in to create a new project.')
+                return
+            }
+            // Confirm that user wants to create a new project
+            if (!await confirm('Create a new project?')) return
             const {result} = await serviceQuery('stan-playground', {
                 type: 'create_project'
             }, {

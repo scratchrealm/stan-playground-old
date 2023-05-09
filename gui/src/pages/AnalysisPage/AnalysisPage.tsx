@@ -8,6 +8,7 @@ import DataGenerationTab from "./DataGenerationTab";
 import DataTab from "./DataTab";
 import MainTab from "./MainTab";
 import RunSamplerTab from "./RunSamplerTab";
+import { confirm } from "react-alert-async";
 
 type Props = {
     analysisId: string
@@ -33,9 +34,11 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
     }, [setStatus])
 
     const handleDeleteRun = useCallback(() => {
-        // confirm that the user wants to delete the run
-        if (!window.confirm('Delete this run?')) return
-        setStatus('none')
+        (async() => {
+            // confirm that the user wants to delete the run
+            if (!await confirm('Delete this run?')) return
+            setStatus('none')
+        })()
     }, [setStatus])
 
     // if the status is queued or running, refresh that analysisInfo periodically

@@ -8,6 +8,7 @@ import { AnalysisInfo } from "./AnalysisPage/useAnalysisData"
 import useProjectData from "./ProjectPage/useProjectData"
 import { getTitleFromMarkdown } from "./AnalysesTable"
 import { userId } from "@figurl/interface/dist/viewInterface/kacheryTypes"
+import { confirm, prompt } from "react-alert-async"
 
 type Props = {
     analysisId: string
@@ -80,9 +81,9 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
     const {descriptionMdText: projectDescription} = useProjectData(projectId)
 
     const handleClone = useCallback(() => {
-        // prompt the user if they are sure they want to clone this analysis
-        if (!window.confirm('Are you sure you want to CLONE this analysis?')) return
         (async() => {
+            // prompt the user if they are sure they want to clone this analysis
+            if (!await confirm('Are you sure you want to CLONE this analysis?')) return
             const originalProjectId = projectId
             const {result} = await serviceQuery('stan-playground', {
                 type: 'clone_analysis',
@@ -100,7 +101,7 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
                 setStatusBarMessage(`Analysis has been cloned. You are now viewing the clone.`)
                 if ((originalProjectId) && (userId)) {
                     (async() => {
-                        if (window.confirm('Do you want to set the project of the clone to the same project as the original?')) {
+                        if (await confirm('Do you want to set the project of the clone to the same project as the original?')) {
                             const {result: result2} = await serviceQuery('stan-playground', {
                                 type: 'set_analysis_project',
                                 analysis_id: result.newAnalysisId,
@@ -124,8 +125,8 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
 
     const handleDelete = useCallback(() => {
         // prompt the user if they are sure they want to delete this analysis
-        if (!window.confirm('Are you sure you want to DELETE this analysis?')) return
         (async() => {
+            if (!confirm('Are you sure you want to DELETE this analysis?')) return
             const {result} = await serviceQuery('stan-playground', {
                 type: 'delete_analysis',
                 analysis_id: analysisId,
@@ -153,10 +154,10 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
     }, [analysisId, setRoute, setStatusBarMessage, projectId])
 
     const handleAddToAProject = useCallback(() => {
-        // prompt the user for the project id
-        const projectId = window.prompt('Enter the project id to add this analysis to:')
-        if (!projectId) return
         (async() => {
+            // prompt the user for the project id
+            const projectId = await prompt('Enter the project ID to add this analysis to:')
+            if (!projectId) return
             const {result} = await serviceQuery('stan-playground', {
                 type: 'set_analysis_project',
                 analysis_id: analysisId,

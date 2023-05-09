@@ -1,6 +1,7 @@
 import { getFileData, serviceQuery, useSignedIn } from "@figurl/interface"
 import YAML from 'js-yaml'
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { alert } from "react-alert-async"
 import { useStatusBar } from "../../StatusBar/StatusBarContext"
 import { getLocalStorageAnalysisEditToken } from "../localStorageAnalyses"
 
@@ -39,11 +40,11 @@ export const useAnalysisTextFile = (analysisId: string, analysisInfo: AnalysisIn
     }, [])
     const {userId} = useSignedIn()
     const setText = useCallback((text: string) => {
-        if ((analysisInfo?.owner_id) && (analysisInfo.owner_id !== userId?.toString())) {
-            window.alert(`You cannot edit this file because it is owned by by ${analysisInfo.owner_id}.`)
-            return
-        }
         (async () => {
+            if ((analysisInfo?.owner_id) && (analysisInfo.owner_id !== userId?.toString())) {
+                await alert(`You cannot edit this file because it is owned by by ${analysisInfo.owner_id}.`)
+                return
+            }
             await serviceQuery('stan-playground', {
                 type: 'set_analysis_text_file',
                 analysis_id: analysisId,
@@ -86,7 +87,7 @@ const useAnalysisData = (analysisId: string) => {
     const setStatus = useCallback((status: string) => {
         (async () => {
             if ((analysisInfo?.owner_id) && (analysisInfo.owner_id !== userId?.toString())) {
-                window.alert(`You cannot perform this action because this analysis is owned by by ${analysisInfo.owner_id}.`)
+                await alert(`You cannot perform this action because this analysis is owned by by ${analysisInfo.owner_id}.`)
                 return
             }
             try {
@@ -104,12 +105,11 @@ const useAnalysisData = (analysisId: string) => {
             }
             catch(err: any) {
                 setStatusBarMessage(err.message)
-                window.alert(err.message)
+                await alert(err.message)
             }
             finally {
                 refreshAnalysisInfo()
             }
-            
         })()
     }, [analysisId, refreshAnalysisInfo, setStatusBarMessage, userId, analysisInfo?.owner_id])
     

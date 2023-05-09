@@ -1,4 +1,5 @@
 import { FunctionComponent, useCallback } from "react";
+import { prompt } from "react-alert-async";
 import { useAccessCode } from "../AccessCodeContext";
 import Hyperlink from "../components/Hyperlink";
 
@@ -11,9 +12,11 @@ const accessCodeTooltip = `When an access code is set, you have the ability to e
 const AccessCodeControl: FunctionComponent<Props> = () => {
     const {accessCode, setAccessCode} = useAccessCode()
     const handleSetAccessCode = useCallback(() => {
-        const newAccessCode = window.prompt('Enter access code:')
-        if (newAccessCode === null) return
-        setAccessCode(newAccessCode)
+        (async () => {
+            const newAccessCode = await prompt('Enter access code:')
+            if (!newAccessCode) return
+            setAccessCode(newAccessCode as string)
+        })()
     }, [setAccessCode])
     return (
         <Hyperlink onClick={handleSetAccessCode} color={accessCode ? 'darkgreen' : 'darkred'}>

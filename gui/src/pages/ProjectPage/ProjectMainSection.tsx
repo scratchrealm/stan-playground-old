@@ -7,6 +7,7 @@ import useProjectData from "./useProjectData";
 import {Summary} from "../useSummary"
 import { useStatusBar } from "../../StatusBar/StatusBarContext";
 import { AnalysisInfo } from "../AnalysisPage/useAnalysisData";
+import { confirm } from "react-alert-async";
 
 type Props = {
     projectId: string
@@ -66,9 +67,9 @@ const ProjectPageMainSection: FunctionComponent<Props> = ({projectId, width, hei
     }, [analyses])
 
     const handleCreateNewAnalysis = useCallback(() => {
-        // Confirm that user wants to create a new analysis
-        if (!window.confirm('Create a new analysis in this project?')) return
         (async () => {
+            // Confirm that user wants to create a new analysis
+            if (!await confirm('Create a new analysis in this project?')) return
             const {result} = await serviceQuery('stan-playground', {
                 type: 'create_analysis',
                 project_id: projectId

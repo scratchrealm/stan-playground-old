@@ -33,6 +33,7 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                     <tr>
                         <th>Analysis</th>
                         <th>Owner</th>
+                        <th>Project</th>
                         <th>Status</th>
                         <th>Elapsed</th>
                         <th>Created</th>
@@ -49,6 +50,15 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                             </td>
                             <td>
                                 {analysis.owner_id || ''}
+                            </td>
+                            <td>
+                                {
+                                    analysis.info.project_id ? (
+                                        <Hyperlink onClick={() => setRoute({page: 'project', projectId: analysis.info.project_id || ''})}>
+                                            {analysis.info.project_id || ''}
+                                        </Hyperlink>
+                                    ) : <span />
+                                }
                             </td>
                             <td>{analysis.status} {createTimestampText(analysis.info)}</td>
                             {/* <td>

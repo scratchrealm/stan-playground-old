@@ -474,10 +474,10 @@
     chroma-js "^2.4.2"
     object-hash "^3.0.0"
 
-"@figurl/interface@^0.2.5":
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@figurl/interface/-/interface-0.2.7.tgz#3ceb825526702af56ea43ead83a4a55336b439a9"
-  integrity sha512-Dzxj4fkHnHNfLRVpmqpHWHb1P6t80Cgp0YCnPTwaLcT0NlaF9PPOn6jNRDvnhEcLKBnAFe0bUVEkwlEIyM6iRA==
+"@figurl/interface@^0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@figurl/interface/-/interface-0.2.9.tgz#ce4b1261ac1e3b30c9f31f3e98c1a2063a28ae21"
+  integrity sha512-UAGHBfFurG8WeePZiPkDzA7CjTrJHFccaUArv1i4QS+7/pcIyPm7eDULcpRQeUxTxTVjSHIPbIvJN0kYymPXRg==
   dependencies:
     "@figurl/core-utils" "^0.1"
     "@types/node" "^18.7.18"
@@ -695,9 +695,9 @@
     "@types/react-addons-linked-state-mixin" "*"
 
 "@types/node@^18.7.18":
-  version "18.16.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.1.tgz#5db121e9c5352925bb1f1b892c4ae620e3526799"
-  integrity sha512-DZxSZWXxFfOlx7k7Rv4LAyiMroaxa3Ly/7OOzZO8cBNho0YzAi4qlbrx8W27JGqG57IgR/6J7r+nOJWw6kcvZA==
+  version "18.16.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.6.tgz#d0ffffe201b253989b17ea157ddabec677a4f4fe"
+  integrity sha512-N7KINmeB8IN3vRR8dhgHEp+YpWvGFcpDoh5XZ8jB5a00AdFKCKEyyGTOPTddUf4JqU1ZKTVxkOxakDvchNVI2Q==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -2659,6 +2659,11 @@ randomfill@^1.0.3:
   dependencies:
     randombytes "^2.0.5"
     safe-buffer "^5.1.0"
+
+react-alert-async@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/react-alert-async/-/react-alert-async-1.2.0.tgz#16b39fa6bae31880f43dd41df03bb39cf59ca4a7"
+  integrity sha512-/BYEEtWJpjqJAW7L9/euu9mL+c3FNKzk7pBh7PaeghWxAEOv1WJuoTbCxfykXv2VydXw5VDKvFGKL3vP/r/c5Q==
 
 react-dom@^18.2.0:
   version "18.2.0"
