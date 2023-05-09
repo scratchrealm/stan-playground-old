@@ -4,17 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stan playground</title>
-    <!-- <script src="https://github.com/stan-dev/stanc3/releases/download/nightly/stanc.js"></script> -->
+    <script src="https://github.com/stan-dev/stanc3/releases/download/nightly/stanc.js"></script>
     <script>
       window.global = window.global || window;
-
-      setTimeout(() => {
-        console.log('loading stanc.js')
-        var script = document.createElement('script');
-        script.src = 'https://github.com/stan-dev/stanc3/releases/download/nightly/stanc.js';
-        document.head.appendChild(script);
-        console.log('loaded stanc.js')
-      }, 1000);
     </script>
   </head>
   <body>
