@@ -3,6 +3,7 @@ import Splitter from "../../components/Splitter";
 import TextEditor, { ToolbarItem } from "../TextEditor";
 import { AnalysisInfo } from "./useAnalysisData";
 import StanCompileResultWindow from "./StanCompileResultWindow";
+import runStanc from "./runStanc";
 
 type Props = {
     width: number
@@ -93,10 +94,12 @@ const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanTex
     const handleAutoFormat = useCallback(() => {
         if (modelStanEditedText === undefined) return
         if (editedModelStanTextOverrider === undefined) return
-        const model = (window as any).stanc('model.stan', modelStanEditedText, ["auto-format", "max-line-length=78"])
-        if (model.result) {
-            editedModelStanTextOverrider(model.result)
-        }
+        ;(async () => {
+            const model = await runStanc('model.stan', modelStanEditedText, ["auto-format", "max-line-length=78"])
+            if (model.result) {
+                editedModelStanTextOverrider(model.result)
+            }
+        })()
     }, [modelStanEditedText, editedModelStanTextOverrider])
 
     const modelReadOnly = useMemo(() => {

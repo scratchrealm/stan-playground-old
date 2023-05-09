@@ -474,10 +474,10 @@
     chroma-js "^2.4.2"
     object-hash "^3.0.0"
 
-"@figurl/interface@^0.2.9":
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/@figurl/interface/-/interface-0.2.9.tgz#ce4b1261ac1e3b30c9f31f3e98c1a2063a28ae21"
-  integrity sha512-UAGHBfFurG8WeePZiPkDzA7CjTrJHFccaUArv1i4QS+7/pcIyPm7eDULcpRQeUxTxTVjSHIPbIvJN0kYymPXRg==
+"@figurl/interface@0.2.8":
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/@figurl/interface/-/interface-0.2.8.tgz#6dcdd673a0ac058ecd61d690f00adf7ee2c4024c"
+  integrity sha512-EBoN7u3Fxd8I2Pef2vryTKoVN88Z9U0Tf1X3InHZpwMcAq4YwqPzkTwqWlD8VUuLtWMnlig8BKTY4ecMBTIpsg==
   dependencies:
     "@figurl/core-utils" "^0.1"
     "@types/node" "^18.7.18"

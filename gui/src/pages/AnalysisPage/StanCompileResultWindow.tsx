@@ -1,5 +1,6 @@
 import { Done } from "@mui/icons-material";
 import { FunctionComponent, useEffect, useState } from "react";
+import runStanc from "./runStanc";
 
 type Props = {
     width: number
@@ -18,8 +19,10 @@ const StanCompileResultWindow: FunctionComponent<Props> = ({width, height, model
     useEffect(() => {
         setModel(undefined)
         if (modelStanText === undefined) return
-        const m = (window as any).stanc('model.stan', modelStanText, ["auto-format", "max-line-length=78"])
-        setModel(m)
+        ;(async () => {
+            const m = await runStanc('model.stan', modelStanText, ["auto-format", "max-line-length=78"])
+            setModel(m)
+        })()
     }, [modelStanText])
 
     if (!model) return <div />
