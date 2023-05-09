@@ -75,7 +75,7 @@ const useAnalysisData = (analysisId: string) => {
     }, [analysisInfoText])
 
     const {text: dataJsonText, setText: setDataJsonText, refresh: refreshDataJsonText} = useAnalysisTextFile(analysisId, analysisInfo, 'data.json')
-    const {text: modelStanText, setText: setModelStanText, refresh: refreshModelStanText} = useAnalysisTextFile(analysisId, analysisInfo, 'model.stan')
+    const {text: mainStanText, setText: setMainStanText, refresh: refreshMainStanText} = useAnalysisTextFile(analysisId, analysisInfo, 'main.stan')
     const {text: descriptionMdText, setText: setDescriptionMdText, refresh: refreshDescriptionMdText} = useAnalysisTextFile(analysisId, analysisInfo, 'description.md')
     const {text: optionsYamlText, setText: setOptionsYamlText, refresh: refreshOptionsYamlText} = useAnalysisTextFile(analysisId, analysisInfo, 'options.yaml')
     const {text: dataPyText, setText: setDataPyText, refresh: refreshDataPyText} = useAnalysisTextFile(analysisId, analysisInfo, 'data.py')
@@ -114,18 +114,18 @@ const useAnalysisData = (analysisId: string) => {
     }, [analysisId, refreshAnalysisInfo, setStatusBarMessage, userId, analysisInfo?.owner_id])
     
     return {
-        modelStanText,
+        mainStanText,
         dataJsonText,
         descriptionMdText,
         optionsYamlText,
         dataPyText,
         analysisInfo,
-        setModelStanText,
+        setMainStanText,
         setDataJsonText,
         setDescriptionMdText,
         setOptionsYamlText,
         setDataPyText,
-        refreshModelStanText,
+        refreshMainStanText,
         refreshDataJsonText,
         refreshDescriptionMdText,
         refreshOptionsYamlText,

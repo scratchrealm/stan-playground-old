@@ -70,7 +70,7 @@ def start_processing(*, dir: str):
 def do_run_analysis(analysis_id: str, analysis_dir: str, analysis_output_dir: str):
     from cmdstanpy import CmdStanModel
 
-    model_fname = f'{analysis_dir}/model.stan'
+    model_fname = f'{analysis_dir}/main.stan'
 
     model = CmdStanModel(stan_file=model_fname)
 

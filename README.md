@@ -7,7 +7,7 @@ Stan Playground is a browser-based system for creating, running, and visualizing
 A Stan Playground instance consists of a collection of analyses. Each analysis comprises:
 
 * An analysis ID (`0001`, `0002`, etc.)
-* A Stan program (`model.stan`)
+* A Stan program (`main.stan`)
 * A data file (`data.json`)
 * A description (`description.md`) - the first heading is the analysis title
 * An options file (`options.yaml`) - determines number of iterations, etc.
@@ -19,7 +19,7 @@ These data are all stored in a directory on your computer (or the computer of th
 stan-playground-data
 ├── analyses
 │   ├── 0001
-│   │   ├── model.stan
+│   │   ├── main.stan
 │   │   ├── data.json
 │   │   └── description.md
 │   │   └── options.yaml
@@ -54,7 +54,7 @@ To create a new analysis, click the `Create new analysis` link above the main an
 
 **Editing an analysis**
 
-To edit an analysis, click on the analysis ID in the main analyses table. This will open the editor for the analysis. You will then be able to edit the model, data, description, and options for the analysis. Typically you would prepare the model.stan and data.json files separately and paste them in to the viewer.
+To edit an analysis, click on the analysis ID in the main analyses table. This will open the editor for the analysis. You will then be able to edit the model, data, description, and options for the analysis. Typically you would prepare the main.stan and data.json files separately and paste them in to the viewer.
 
 Note that the model, data, and options can only be edited if the status is "none", meaning that the analysis has not yet been run, or queued for running. However, you can edit the description at any time.
 

@@ -5,7 +5,7 @@ import runStanc from "./runStanc";
 type Props = {
     width: number
     height: number
-    modelStanText: string | undefined
+    mainStanText: string | undefined
 }
 
 type CompiledModel = {
@@ -14,16 +14,16 @@ type CompiledModel = {
     result: string
 }
 
-const StanCompileResultWindow: FunctionComponent<Props> = ({width, height, modelStanText}) => {
+const StanCompileResultWindow: FunctionComponent<Props> = ({width, height, mainStanText}) => {
     const [model, setModel] = useState<CompiledModel | undefined>(undefined)
     useEffect(() => {
         setModel(undefined)
-        if (modelStanText === undefined) return
+        if (mainStanText === undefined) return
         ;(async () => {
-            const m = await runStanc('model.stan', modelStanText, ["auto-format", "max-line-length=78"])
+            const m = await runStanc('main.stan', mainStanText, ["auto-format", "max-line-length=78"])
             setModel(m)
         })()
-    }, [modelStanText])
+    }, [mainStanText])
 
     if (!model) return <div />
     if ((model.errors) && (model.errors.length > 0)) {
@@ -42,7 +42,7 @@ const StanCompileResultWindow: FunctionComponent<Props> = ({width, height, model
             </div>
         )
     }
-    if (model.result === modelStanText) {
+    if (model.result === mainStanText) {
         return (<div style={{color: 'green'}}><Done /> canonical format</div>)
     }
     return (<div style={{color: 'green'}}><Done /></div>)

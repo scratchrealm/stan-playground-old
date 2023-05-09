@@ -6,9 +6,9 @@ import time
 def compile_analysis_model(analysis_id: str, *, dir: str):
     analysis_path = f'{dir}/analyses/{analysis_id}'
 
-    model_stan_path = f'{analysis_path}/model.stan'
-    if not os.path.exists(model_stan_path):
-        raise Exception(f'Unable to find model.stan file for analysis {analysis_id}')
+    main_stan_path = f'{analysis_path}/main.stan'
+    if not os.path.exists(main_stan_path):
+        raise Exception(f'Unable to find main.stan file for analysis {analysis_id}')
     
     # Run compilation in a separate process, writing the console output to compile.console.txt, including the stderr, and waiting for return
     # we want to be in the analysis_path as the working directory
@@ -22,7 +22,7 @@ def compile_analysis_model(analysis_id: str, *, dir: str):
         f.write(f'============================\n')
         timer = time.time()
         return_code = subprocess.call(
-            ['cmdstan_model', 'model.stan'],
+            ['cmdstan_model', 'main.stan'],
             cwd=analysis_path,
             stdout=f,
             stderr=subprocess.STDOUT

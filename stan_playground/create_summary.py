@@ -21,6 +21,11 @@ def create_summary(dir: str):
         else:
             info = {}
         
+        # if model.stan exists, rename to main.stan
+        if os.path.exists(f'{path}/model.stan'):
+            print(f'Renaming model.stan to main.stan for analysis {folder}')
+            os.rename(f'{path}/model.stan', f'{path}/main.stan')
+        
         # if deleted, skip
         if info.get('deleted', False):
             continue
@@ -43,9 +48,9 @@ def create_summary(dir: str):
         else:
             options = {}
 
-        # read stan program from model.stan file
-        if os.path.exists(f'{path}/model.stan'):
-            with open(f'{path}/model.stan') as f:
+        # read stan program from main.stan file
+        if os.path.exists(f'{path}/main.stan'):
+            with open(f'{path}/main.stan') as f:
                 stan_program = f.read()
         else:
             stan_program = ''

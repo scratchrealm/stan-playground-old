@@ -25,7 +25,7 @@ def handle_set_analysis_text_file(query: dict, *, dir: str, user_id: Union[str, 
     if not _can_edit_analysis(analysis_info=info, user_id=user_id, analysis_edit_token=analysis_edit_token, query=query):
         raise Exception('Not authorized to edit this analysis.')
 
-    if name in ['model.stan', 'data.json', 'description.md', 'options.yaml', 'data.py']:
+    if name in ['main.stan', 'data.json', 'description.md', 'options.yaml', 'data.py']:
         path = f'$dir/analyses/{analysis_id}/{name}'
         full_path = _get_full_path(path, dir=dir)
         with open(full_path, 'w') as f:
@@ -150,7 +150,7 @@ def handle_create_analysis(query: dict, *, dir: str, user_id: Union[str, None]=N
     new_analysis_id = _random_id(8)
     path = _get_full_path(f'$dir/analyses/{new_analysis_id}', dir=dir)
     os.makedirs(path)
-    with open(f'{path}/model.stan', 'w') as f:
+    with open(f'{path}/main.stan', 'w') as f:
         f.write('// Stan model goes here')
     with open(f'{path}/data.json', 'w') as f:
         f.write('{}')

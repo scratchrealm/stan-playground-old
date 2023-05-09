@@ -10,9 +10,9 @@ type Props = {
     height: number
     analysisId: string
     canEdit: boolean
-    modelStanText: string | undefined
-    setModelStanText: (text: string) => void
-    refreshModelStanText: () => void
+    mainStanText: string | undefined
+    setMainStanText: (text: string) => void
+    refreshMainStanText: () => void
     descriptionMdText: string | undefined
     setDescriptionMdText: (text: string) => void
     refreshDescriptionMdText: () => void
@@ -22,18 +22,18 @@ type Props = {
     analysisInfo: AnalysisInfo | undefined
 }
 
-const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanText, setModelStanText, refreshModelStanText, descriptionMdText, setDescriptionMdText, refreshDescriptionMdText, optionsYamlText, setOptionsYamlText, refreshOptionsYamlText, analysisInfo}) => {
+const MainTab: FunctionComponent<Props> = ({width, height, canEdit, mainStanText, setMainStanText, refreshMainStanText, descriptionMdText, setDescriptionMdText, refreshDescriptionMdText, optionsYamlText, setOptionsYamlText, refreshOptionsYamlText, analysisInfo}) => {
     // const {text: compileConsoleText, refresh: refreshCompileConsoleText} = useAnalysisTextFile(analysisId, 'compile.console.txt')
-    const [modelStanEditedText, setModelStanEditedText] = useState<string | undefined>(undefined)
+    const [mainStanEditedText, setMainStanEditedText] = useState<string | undefined>(undefined)
 
     // const {setStatusBarMessage} = useStatusBar()
 
     // const [compiling, setCompiling] = useState(false)
 
     // useEffect(() => {
-    //     if (modelStanEditedText === undefined) return
-    //     const model = (window as any).stanc('model.stan', modelStanEditedText)
-    // }, [modelStanEditedText])
+    //     if (mainStanEditedText === undefined) return
+    //     const model = (window as any).stanc('main.stan', mainStanEditedText)
+    // }, [mainStanEditedText])
 
     // const handleCompile = useCallback(async () => {
     //     if (accessCodeHasExpired(accessCode)) {
@@ -85,22 +85,22 @@ const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanTex
     //     })()
     // }, [accessCode, analysisId, refreshCompileConsoleText, setStatusBarMessage])
 
-    const [editedModelStanTextOverrider, setEditedModelStanTextOverrider] = useState<(text: string) => void>()
+    const [editedMainStanTextOverrider, setEditedMainStanTextOverrider] = useState<(text: string) => void>()
 
     const handleEditedTextOverrider = useCallback((overrider: (text: string) => void) => {
-        setEditedModelStanTextOverrider(() => overrider)
+        setEditedMainStanTextOverrider(() => overrider)
     }, [])
 
     const handleAutoFormat = useCallback(() => {
-        if (modelStanEditedText === undefined) return
-        if (editedModelStanTextOverrider === undefined) return
+        if (mainStanEditedText === undefined) return
+        if (editedMainStanTextOverrider === undefined) return
         ;(async () => {
-            const model = await runStanc('model.stan', modelStanEditedText, ["auto-format", "max-line-length=78"])
+            const model = await runStanc('main.stan', mainStanEditedText, ["auto-format", "max-line-length=78"])
             if (model.result) {
-                editedModelStanTextOverrider(model.result)
+                editedMainStanTextOverrider(model.result)
             }
         })()
-    }, [modelStanEditedText, editedModelStanTextOverrider])
+    }, [mainStanEditedText, editedMainStanTextOverrider])
 
     const modelReadOnly = useMemo(() => {
         return (!canEdit) || (analysisInfo?.status !== 'none')
@@ -110,7 +110,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanTex
         const ret: ToolbarItem[] = []
 
         // // compile
-        // if (modelStanEditedText === modelStanText) {
+        // if (mainStanEditedText === mainStanText) {
         //     if (analysisInfo?.status === 'none') {
         //         if (compiling) {
         //             ret.push({
@@ -129,7 +129,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanTex
 
         // auto format
         if (!modelReadOnly) {
-            if (modelStanEditedText !== undefined) {
+            if (mainStanEditedText !== undefined) {
                 ret.push({
                     label: "auto format",
                     onClick: handleAutoFormat,
@@ -139,7 +139,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanTex
         }
 
         return ret
-    }, [handleAutoFormat, modelStanEditedText, modelReadOnly])
+    }, [handleAutoFormat, mainStanEditedText, modelReadOnly])
 
     return (
         <Splitter
@@ -159,11 +159,11 @@ const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanTex
                     height={0}
                     // language="stan"
                     language="stan"
-                    label="model.stan"
-                    text={modelStanText}
-                    onSetText={setModelStanText}
-                    onReload={refreshModelStanText}
-                    onEditedTextChanged={setModelStanEditedText}
+                    label="main.stan"
+                    text={mainStanText}
+                    onSetText={setMainStanText}
+                    onReload={refreshMainStanText}
+                    onEditedTextChanged={setMainStanEditedText}
                     onEditedTextOverrider={handleEditedTextOverrider}
                     readOnly={modelReadOnly}
                     toolbarItems={toolbarItems}
@@ -172,7 +172,7 @@ const MainTab: FunctionComponent<Props> = ({width, height, canEdit, modelStanTex
                     <StanCompileResultWindow
                         width={0}
                         height={0}
-                        modelStanText={modelStanEditedText}
+                        mainStanText={mainStanEditedText}
                     />
                 }
                 {/* <TextEditor

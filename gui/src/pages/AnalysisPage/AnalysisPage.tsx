@@ -18,7 +18,7 @@ type Props = {
 
 const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => {
     // important to do this here just once rather than separately in the various editors
-    const {modelStanText, dataJsonText, descriptionMdText, optionsYamlText, dataPyText, setDataPyText, analysisInfo, setModelStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, refreshModelStanText, refreshDataJsonText, refreshDataPyText, refreshDescriptionMdText, refreshOptionsYamlText, setStatus, refreshAnalysisInfo} = useAnalysisData(analysisId)
+    const {mainStanText, dataJsonText, descriptionMdText, optionsYamlText, dataPyText, setDataPyText, analysisInfo, setMainStanText, setDataJsonText, setDescriptionMdText, setOptionsYamlText, refreshMainStanText, refreshDataJsonText, refreshDataPyText, refreshDescriptionMdText, refreshOptionsYamlText, setStatus, refreshAnalysisInfo} = useAnalysisData(analysisId)
 
     useEffect(() => {
         if (analysisInfo) {
@@ -99,9 +99,9 @@ const AnalysisPage: FunctionComponent<Props> = ({analysisId, width, height}) => 
                     height={0}
                     analysisId={analysisId}
                     canEdit={canEdit}
-                    modelStanText={modelStanText}
-                    setModelStanText={setModelStanText}
-                    refreshModelStanText={refreshModelStanText}
+                    mainStanText={mainStanText}
+                    setMainStanText={setMainStanText}
+                    refreshMainStanText={refreshMainStanText}
                     descriptionMdText={descriptionMdText}
                     setDescriptionMdText={setDescriptionMdText}
                     refreshDescriptionMdText={refreshDescriptionMdText}
