@@ -154,7 +154,7 @@ def handle_create_analysis(query: dict, *, dir: str, user_id: Union[str, None]=N
     with open(f'{path}/description.md', 'w') as f:
         f.write('# Untitled')
     with open(f'{path}/options.yaml', 'w') as f:
-        f.write('iter_sampling: 200\niter_warmup: 20\n')
+        f.write('iter_sampling: 500\niter_warmup: 500\nsave_warmup: True\nchains: 4\nseed: 0\n')
     x = {
         'status': 'none',
         'owner_id': user_id,
