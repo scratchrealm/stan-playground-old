@@ -4,7 +4,7 @@ import Hyperlink from "../components/Hyperlink"
 import { useStatusBar } from "../StatusBar/StatusBarContext"
 import useRoute from "../useRoute"
 import { addLocalStorageAnalysis, deleteLocalStorageAnalysis, getLocalStorageAnalysisEditToken } from "./localStorageAnalyses"
-import { AnalysisInfo } from "./AnalysisPage/useAnalysisData"
+import useAnalysisData, { AnalysisInfo } from "./AnalysisPage/useAnalysisData"
 import useProjectData from "./ProjectPage/useProjectData"
 import { getTitleFromMarkdown } from "./AnalysesTable"
 import { userId } from "@figurl/interface/dist/viewInterface/kacheryTypes"
@@ -173,6 +173,10 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
         })()
     }, [analysisId, onRefreshAnalysisInfo])
 
+    const {descriptionMdText} = useAnalysisData(analysisId)
+
+    const analysisTitle = getTitleFromMarkdown(descriptionMdText || '')
+
     return (
         <div style={{paddingLeft: 15, paddingTop: 15, fontSize: 14, userSelect: 'none'}}>
             <div>
@@ -185,7 +189,8 @@ const AnalysisControlPanel: FunctionComponent<Props> = ({analysisId, canEdit, an
                 }
             </div>
             <hr />
-            <div>Analysis: {analysisId}</div>
+            <h3>{analysisTitle}</h3>
+            <div>Analysis ID: {analysisId}</div>
             <div>Status: <span style={{color: colorForStatus(status)}}>{status}</span> (<Hyperlink onClick={onRefreshAnalysisInfo}>refresh</Hyperlink>)</div>
             <hr />
             <div>{status === 'none' && (

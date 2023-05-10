@@ -78,7 +78,7 @@ const ProjectsTable: FunctionComponent<Props> = ({mode}) => {
                         <tr key={project.project_id}>
                             <td>
                                 <Hyperlink onClick={() => setRoute({page: 'project', projectId: project.project_id})}>
-                                    {getTitleFromMarkdown(project.description)} ({project.project_id})
+                                    {getTitleFromMarkdown(project.description)}
                                 </Hyperlink>
                             </td>
                             <td>

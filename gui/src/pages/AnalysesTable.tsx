@@ -45,7 +45,7 @@ const AnalysesTable: FunctionComponent<Props> = ({summary}) => {
                         <tr key={analysis.analysis_id}>
                             <td>
                                 <Hyperlink onClick={() => setRoute({page: 'analysis', analysisId: analysis.analysis_id})}>
-                                    {analysis.title || getTitleFromMarkdown(analysis.description)} ({analysis.analysis_id})
+                                    {analysis.title || getTitleFromMarkdown(analysis.description)}
                                 </Hyperlink>
                             </td>
                             <td>

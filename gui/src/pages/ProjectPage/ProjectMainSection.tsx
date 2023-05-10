@@ -23,7 +23,7 @@ type ProjectAnalysis = {
 
 const ProjectPageMainSection: FunctionComponent<Props> = ({projectId, width, height}) => {
     // important to do this here just once rather than separately in the various editors
-    const {descriptionMdText, setDescriptionMdText, refreshDescriptionMdText, projectConfig, refreshProjectConfig} = useProjectData(projectId)
+    const {descriptionMdText, projectConfig, refreshProjectConfig} = useProjectData(projectId)
 
     const projectTitle = getTitleFromMarkdown(descriptionMdText || '')
 
@@ -112,9 +112,13 @@ const ProjectPageMainSection: FunctionComponent<Props> = ({projectId, width, hei
         <div style={{position: 'absolute', width, height}}>
             <div style={{padding: 20}}>
                 <div><Hyperlink onClick={() => setRoute({page: 'home'})}>&#8592; Home</Hyperlink></div>
-                <h2>Project: {projectTitle} ({projectId})</h2>
+                <h2>Project: {projectTitle}</h2>
                 <table>
                     <tbody>
+                        <tr>
+                            <td style={{fontWeight: 'bold'}}>Project ID:</td>
+                            <td>{projectId}</td>
+                        </tr>
                         <tr>
                             <td style={{fontWeight: 'bold'}}>Owner:</td>
                             <td>{projectConfig?.owner_id}</td>
@@ -125,6 +129,7 @@ const ProjectPageMainSection: FunctionComponent<Props> = ({projectId, width, hei
                         </tr>
                     </tbody>
                 </table>
+                <br />
                 {
                     projectConfig && !projectConfig.listed && (
                         <div>
