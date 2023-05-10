@@ -46,6 +46,8 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, canEdit, da
                     analysis_id: analysisId,
                     access_code: accessCode,
                     edit_token: getLocalStorageAnalysisEditToken(analysisId)
+                }, {
+                    includeUserId: true
                 })
                 if (!result.success) {
                     setStatusBarMessage('Data generation failed')
@@ -93,7 +95,7 @@ const DataGenerationTab: FunctionComponent<Props> = ({width, height, canEdit, da
                 text={dataPyText}
                 onSetText={setDataPyText}
                 onReload={refreshDataPyText}
-                readOnly={(!canEdit) || (accessCode ? false : true) || (analysisStatus !== 'none')}
+                readOnly={(!canEdit) || (analysisStatus !== 'none')}
                 toolbarItems={toolbarItems}
                 onEditedTextChanged={setDataPyEditedText}
             />
