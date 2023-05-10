@@ -83,6 +83,9 @@ def do_run_analysis(analysis_id: str, analysis_dir: str, analysis_output_dir: st
         options = yaml.safe_load(f.read())
     iter_sampling = options.get('iter_sampling', None)
     iter_warmup = options.get('iter_warmup', None)
+    chains = options.get('chains', 4)
+    save_warmup = options.get('save_warmup', True)
+    seed = options.get('seed', None)
 
     if iter_sampling is None:
         raise Exception('iter_sampling not specified in options.yaml')
@@ -102,7 +105,9 @@ def do_run_analysis(analysis_id: str, analysis_dir: str, analysis_output_dir: st
             output_dir=analysis_output_dir,
             iter_sampling=iter_sampling,
             iter_warmup=iter_warmup,
-            save_warmup=True,
+            chains=chains,
+            seed=seed,
+            save_warmup=save_warmup,
             show_console=True
         )
         print(f'====================')

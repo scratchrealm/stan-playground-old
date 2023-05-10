@@ -20,18 +20,18 @@ def handle_set_analysis_text_file(query: dict, *, dir: str, user_id: Union[str, 
     name = query['name']
     text = query['text']
 
-    info = _get_analysis_info(analysis_id, dir=dir)
-    analysis_edit_token = _get_analysis_edit_token(analysis_id, dir=dir)
-    if not _can_edit_analysis(analysis_info=info, user_id=user_id, analysis_edit_token=analysis_edit_token, query=query):
-        raise Exception('Not authorized to edit this analysis.')
+    _check_can_edit_analysis(analysis_id=analysis_id, dir=dir, user_id=user_id, query=query)
 
     if name in ['main.stan', 'data.json', 'description.md', 'options.yaml', 'data.py']:
         path = f'$dir/analyses/{analysis_id}/{name}'
         full_path = _get_full_path(path, dir=dir)
         with open(full_path, 'w') as f:
             f.write(text)
-        info['timestamp_modified'] = time.time()
-        _set_analysis_info(analysis_id, info, dir=dir)
+
+        _update_analysis_info(analysis_id=analysis_id, dir=dir, update={
+            'timestamp_modified': time.time()
+        })
+
         create_summary(dir=_get_full_path('$dir', dir=dir))
         return {'success': True}, b''
     else:
@@ -42,36 +42,36 @@ def handle_set_analysis_status(query: dict, *, dir: str, user_id: Union[str, Non
     check_valid_analysis_id(analysis_id)
     status = query['status']
 
-    info = _get_analysis_info(analysis_id, dir=dir)
-    analysis_edit_token = _get_analysis_edit_token(analysis_id, dir=dir)
-    if not _can_edit_analysis(analysis_info=info, user_id=user_id, analysis_edit_token=analysis_edit_token, query=query):
-        raise Exception('Not authorized to edit this analysis.')
-        
+    _check_can_edit_analysis(analysis_id=analysis_id, dir=dir, user_id=user_id, query=query)
+    
+    info = _get_analysis_info(analysis_id=analysis_id, dir=dir)
     current_status = info.get('status', 'none')
     if status == 'queued':
         if current_status != 'none':
             raise Exception(f'Unable to set status to "queued" because current status is "{current_status}"')
-        
-        info['status'] = 'queued'
-        info['error'] = None
-        info['timestamp_queued'] = time.time()
-        info['timestamp_modified'] = time.time()
-        _set_analysis_info(analysis_id, info, dir=dir)
+
+        _update_analysis_info(analysis_id=analysis_id, dir=dir, update={
+            'status': 'queued',
+            'error': None,
+            'timestamp_queued': time.time(),
+            'timestamp_modified': time.time()
+        })
         create_summary(dir=_get_full_path('$dir', dir=dir))
         return {'success': True}, b''
     elif status == 'none':
         if not current_status in ['completed', 'failed', 'queued']:
             raise Exception(f'Unable to set status to "none" because current status is "{current_status}"')
-        info['status'] = 'none'
-        info['error'] = None
-        info['timestamp_queued'] = None
-        info['timestamp_started'] = None
-        info['timestamp_completed'] = None
-        info['timestamp_failed'] = None
-        info['timestamp_modified'] = time.time()
+        _update_analysis_info(analysis_id=analysis_id, dir=dir, update={
+            'status': 'none',
+            'error': None,
+            'timestamp_queued': None,
+            'timestamp_started':None,
+            'timestamp_completed': None,
+            'timestamp_failed': None,
+            'timestamp_modified': time.time()
+        })
         _clear_run_console_for_analysis(analysis_id, dir=dir)
         _clear_output_for_analysis(analysis_id, dir=dir)
-        _set_analysis_info(analysis_id, info, dir=dir)
         create_summary(dir=_get_full_path('$dir', dir=dir))
         return {'success': True}, b''
     else:
@@ -118,13 +118,11 @@ def handle_delete_analysis(query: dict, *, dir: str, user_id: Union[str, None]=N
     analysis_id = query['analysis_id']
     check_valid_analysis_id(analysis_id)
 
-    info = _get_analysis_info(analysis_id, dir=dir)
-    analysis_edit_token = _get_analysis_edit_token(analysis_id, dir=dir)
-    if not _can_edit_analysis(analysis_info=info, user_id=user_id, analysis_edit_token=analysis_edit_token, query=query):
-        raise Exception('Not authorized to edit this analysis.')
+    _check_can_edit_analysis(analysis_id=analysis_id, dir=dir, user_id=user_id, query=query)
 
-    info['deleted'] = True
-    _set_analysis_info(analysis_id, info, dir=dir)
+    _update_analysis_info(analysis_id=analysis_id, dir=dir, update={
+        'deleted': True
+    })
     create_summary(dir=_get_full_path('$dir', dir=dir))
     return {'success': True}, b''
 
@@ -132,13 +130,12 @@ def handle_undelete_analysis(query: dict, *, dir: str, user_id: Union[str, None]
     analysis_id = query['analysis_id']
     check_valid_analysis_id(analysis_id)
 
-    info = _get_analysis_info(analysis_id, dir=dir)
-    analysis_edit_token = _get_analysis_edit_token(analysis_id, dir=dir)
-    if not _can_edit_analysis(analysis_info=info, user_id=user_id, analysis_edit_token=analysis_edit_token, query=query):
-        raise Exception('Not authorized to edit this analysis.')
+    _check_can_edit_analysis(analysis_id=analysis_id, dir=dir, user_id=user_id, query=query)
 
-    info['deleted'] = False
-    _set_analysis_info(analysis_id, info, dir=dir)
+    _update_analysis_info(analysis_id=analysis_id, dir=dir, update={
+        'deleted': False
+    })    
+
     create_summary(dir=_get_full_path('$dir', dir=dir))
     return {'success': True}, b''
 
@@ -178,10 +175,7 @@ def handle_generate_analysis_data(query: dict, *, dir: str, user_id: Union[str, 
     analysis_id = query['analysis_id']
     check_valid_analysis_id(analysis_id)
 
-    info = _get_analysis_info(analysis_id, dir=dir)
-    analysis_edit_token = _get_analysis_edit_token(analysis_id, dir=dir)
-    if not _can_edit_analysis(analysis_info=info, user_id=user_id, analysis_edit_token=analysis_edit_token, query=query):
-        raise Exception('Not authorized to edit this analysis.')
+    _check_can_edit_analysis(analysis_id=analysis_id, dir=dir, user_id=user_id, query=query)
 
     # This is very important because we don't want unauthorized execution of Python code.
     access_code = query.get('access_code', '')
@@ -193,8 +187,9 @@ def handle_generate_analysis_data(query: dict, *, dir: str, user_id: Union[str, 
     except Exception as e:
         return {'success': False, 'error': str(e)}, b''
     
-    info['timestamp_modified'] = time.time()
-    _set_analysis_info(analysis_id, info, dir=dir)
+    _update_analysis_info(analysis_id=analysis_id, dir=dir, update={
+        'timestamp_modified': time.time()
+    })
                 
     return {'success': True}, b''
 
@@ -239,6 +234,12 @@ def _set_analysis_info(analysis_id: str, info: dict, *, dir: str) -> None:
     with open(full_path, 'w') as f:
         f.write(text)
 
+def _update_analysis_info(*, analysis_id: str, dir: str, update: dict):
+    info = _get_analysis_info(analysis_id=analysis_id, dir=dir)
+    for k, v in update.items():
+        info[k] = v
+    _set_analysis_info(analysis_id=analysis_id, dir=dir, info=info)
+
 def _clear_run_console_for_analysis(analysis_id: str, *, dir: str) -> None:
     # for security, ensure that analysis_id is a valid id
     check_valid_analysis_id(analysis_id)
@@ -255,7 +256,9 @@ def _clear_output_for_analysis(analysis_id: str, *, dir: str) -> None:
     if os.path.exists(full_path):
         shutil.rmtree(full_path)
 
-def _can_edit_analysis(*, analysis_info: dict, user_id: str, analysis_edit_token: str, query: dict):
+def _check_can_edit_analysis(*, analysis_id: str, dir: str, user_id: str, query: dict):
+    analysis_info = _get_analysis_info(analysis_id, dir=dir)
+    analysis_edit_token = _get_analysis_edit_token(analysis_id, dir=dir)
     analysis_owner_id = analysis_info.get('owner_id', analysis_info.get('user_id', None))
     if analysis_owner_id:
         if user_id != analysis_owner_id:
