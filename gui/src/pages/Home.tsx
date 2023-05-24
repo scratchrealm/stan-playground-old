@@ -98,7 +98,7 @@ const Home: FunctionComponent<Props> = ({width, height}) => {
                 &nbsp;|&nbsp;
                 <Hyperlink onClick={handleCreateNewProject}>Create new project</Hyperlink>
                 &nbsp;|&nbsp;
-                <a href="https://github.com/scratchrealm/stan-playground/blob/main/README.md" target="_blank" rel="noopener noreferrer">View documentation</a>
+                <a href="https://github.com/scratchrealm/stan-playground-old/blob/main/README.md" target="_blank" rel="noopener noreferrer">View documentation</a>
             </div>
             <h3>Public projects</h3>
             {

@@ -139,7 +139,7 @@ The web application is hosted on GitHub pages. It can also be run locally for de
 To view the web application, navigate to the following URL in your browser.
 
 ```
-https://figurl.org/f?v=https://scratchrealm.github.io/stan-playground&label=stan-playground&sh=http://localhost:61752&dir=rtcshare://
+https://figurl.org/f?v=https://scratchrealm.github.io/stan-playground-old&label=stan-playground&sh=http://localhost:61752&dir=rtcshare://
 ```
 
 This is assuming you are connecting to a locally-running rtcshare service. To connect to a remote service, you would replace the value of the `sh` parameter with the URL of the remote rtcshare service.

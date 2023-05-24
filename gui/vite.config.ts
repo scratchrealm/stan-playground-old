@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react()
   ],
-  base: "https://scratchrealm.github.io/stan-playground",
+  base: "https://scratchrealm.github.io/stan-playground-old",
   define: {
     'process.env': {}
   }
